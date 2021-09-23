@@ -1,1 +1,1 @@
-# cysmart-ios
+CySmart iOS app

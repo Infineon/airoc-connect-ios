@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>0000180a-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>device_info</string>
+		<key>Service_Name</key>
+		<string>Device Information</string>
+	</dict>
+	<key>0000cab5-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>capsense</string>
+		<key>Service_Name</key>
+		<string>CapSense Service</string>
+	</dict>
+	<key>0003cab5-0000-1000-8000-00805f9b0131</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>capsense</string>
+		<key>Service_Name</key>
+		<string>CapSense Service</string>
+	</dict>
+	<key>0000caa1-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>capsense_proximity</string>
+		<key>Service_Name</key>
+		<string>CapSense Proximity</string>
+	</dict>
+	<key>0000caa2-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>capsense_slider</string>
+		<key>Service_Name</key>
+		<string>CapSense Slider</string>
+	</dict>
+	<key>0000caa3-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>capsense_button</string>
+		<key>Service_Name</key>
+		<string>CapSense Button</string>
+	</dict>
+	<key>0000180d-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>heart_rate</string>
+		<key>Service_Name</key>
+		<string>Heart Rate Service</string>
+	</dict>
+	<key>0000180f-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>battery</string>
+		<key>Service_Name</key>
+		<string>Battery Service</string>
+	</dict>
+	<key>00001816-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>cyclingSpeed_Cadense</string>
+		<key>Service_Name</key>
+		<string>Cycling Speed and Cadence</string>
+	</dict>
+	<key>00001814-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>runningSpeed_cadense</string>
+		<key>Service_Name</key>
+		<string>Running Speed and Cadence</string>
+	</dict>
+	<key>00001810-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>blood_pressure</string>
+		<key>Service_Name</key>
+		<string>Blood Pressure</string>
+	</dict>
+	<key>00001802-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>find_me</string>
+		<key>Service_Name</key>
+		<string>Find Me</string>
+	</dict>
+	<key>00001808-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>glucose</string>
+		<key>Service_Name</key>
+		<string>Glucose Service</string>
+	</dict>
+	<key>0000cbbb-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>rgb_raw_view</string>
+		<key>Service_Name</key>
+		<string>RGB LED </string>
+	</dict>
+	<key>0003cbbb-0000-1000-8000-00805f9b0131</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>rgb_raw_view</string>
+		<key>Service_Name</key>
+		<string>RGB LED </string>
+	</dict>
+	<key>00001803-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>proximity</string>
+		<key>Service_Name</key>
+		<string>Proximity</string>
+	</dict>
+	<key>00001809-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>health_thermometer</string>
+		<key>Service_Name</key>
+		<string>Health Thermometer</string>
+	</dict>
+	<key>00001111-1111-0001-0008-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>unknown</string>
+		<key>Service_Name</key>
+		<string>UnKnown Service</string>
+	</dict>
+	<key>00001800-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>gatt_db</string>
+		<key>Service_Name</key>
+		<string>GattDB</string>
+	</dict>
+	<key>00001804-0000-1000-8000-00805f9b34fb</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>proximity</string>
+		<key>Service_Name</key>
+		<string>Proximity</string>
+	</dict>
+	<key>00040001-0000-1000-8000-00805f9b0131</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>sensor_hub</string>
+		<key>Service_Name</key>
+		<string>Sensor Hub</string>
+	</dict>
+	<key>00060000-f8ce-11e4-abf4-0002a5d5c51b</key>
+	<dict>
+		<key>Service_Image</key>
+		<string>ota_update</string>
+		<key>Service_Name</key>
+		<string>Bootloader Service</string>
+	</dict>
+</dict>
+</plist>

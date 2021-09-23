@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>0</key>
+	<string>Reserved For Future Use</string>
+	<key>1</key>
+	<string>Boolean</string>
+	<key>2</key>
+	<string>unsigned 2-bit integer</string>
+	<key>3</key>
+	<string>unsigned 4-bit integer</string>
+	<key>4</key>
+	<string>unsigned 8-bit integer</string>
+	<key>5</key>
+	<string>unsigned 12-bit integer</string>
+	<key>6</key>
+	<string>unsigned 16-bit integer</string>
+	<key>7</key>
+	<string>unsigned 24-bit integer</string>
+	<key>8</key>
+	<string>unsigned 32-bit integer</string>
+	<key>9</key>
+	<string>unsigned 48-bit integer</string>
+	<key>10</key>
+	<string>unsigned 64-bit integer</string>
+	<key>11</key>
+	<string>unsigned 128-bit integer</string>
+	<key>12</key>
+	<string>signed 8-bit integer</string>
+	<key>13</key>
+	<string>signed 12-bit integer</string>
+	<key>14</key>
+	<string>signed 16-bit integer</string>
+	<key>15</key>
+	<string>signed 24-bit integer</string>
+	<key>16</key>
+	<string>signed 32-bit integer</string>
+	<key>17</key>
+	<string>signed 48-bit integer</string>
+	<key>18</key>
+	<string>signed 64-bit integer</string>
+	<key>19</key>
+	<string>signed 128-bit integer</string>
+	<key>20</key>
+	<string>IEEE-754 32-bit floating point</string>
+	<key>21</key>
+	<string>IEEE-754 64-bit floating point</string>
+	<key>22</key>
+	<string>IEEE-11073 16-bit SFLOAT</string>
+	<key>23</key>
+	<string>IEEE-11073 32-bit FLOAT</string>
+	<key>24</key>
+	<string>IEEE-20601 format</string>
+	<key>25</key>
+	<string>UTF-8 string</string>
+	<key>26</key>
+	<string>UTF-16 string</string>
+	<key>27</key>
+	<string>Opaque Structure
+</string>
+</dict>
+</plist>
