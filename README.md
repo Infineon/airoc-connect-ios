@@ -1,1 +1,1 @@
-CySmart iOS app. See [CySmart – Mobile App](https://www.cypress.com/documentation/software-and-drivers/cysmart-mobile-app).
+CySmart iOS app. See [CySmart – Mobile App](http://www.cypress.com/cysmartmobile).
