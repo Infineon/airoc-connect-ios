@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="21225" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina5_9" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21207"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="Roboto-Bold.ttf">
+            <string>Roboto-Bold</string>
+        </array>
+        <array key="Roboto-Regular.ttf">
+            <string>Roboto-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="iN0-l3-epB" customClass="AboutView">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ON9-VS-X3R" userLabel="Banner View">
+                    <rect key="frame" x="0.0" y="47" width="375" height="361"/>
+                    <subviews>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="infineon_logo" translatesAutoresizingMaskIntoConstraints="NO" id="s9h-8v-gsX">
+                            <rect key="frame" x="75" y="90.333333333333329" width="225" height="180.33333333333337"/>
+                        </imageView>
+                    </subviews>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                    <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstItem="s9h-8v-gsX" firstAttribute="centerY" secondItem="ON9-VS-X3R" secondAttribute="centerY" id="6L1-8K-aLY"/>
+                        <constraint firstItem="s9h-8v-gsX" firstAttribute="centerX" secondItem="ON9-VS-X3R" secondAttribute="centerX" id="SIp-GE-V7V"/>
+                        <constraint firstItem="s9h-8v-gsX" firstAttribute="height" secondItem="ON9-VS-X3R" secondAttribute="height" multiplier="0.5" id="gvU-6y-RHr"/>
+                        <constraint firstItem="s9h-8v-gsX" firstAttribute="width" secondItem="ON9-VS-X3R" secondAttribute="width" multiplier="0.6" id="hHy-R0-Irm"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Avq-ZI-X6T" userLabel="Body View">
+                    <rect key="frame" x="0.0" y="408" width="375" height="370"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" layoutMarginsFollowReadableWidth="YES" insetsLayoutMarginsFromSafeArea="NO" text="VERSION SHOULD BE HERE MULTILINE" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vDm-9k-XGR">
+                            <rect key="frame" x="0.0" y="19.999999999999996" width="375" height="58.666666666666657"/>
+                            <fontDescription key="fontDescription" name="Roboto-Bold" family="Roboto" pointSize="25"/>
+                            <color key="textColor" red="0.047058823529411764" green="0.21568627450980393" blue="0.4823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qPN-oe-Pz4">
+                            <rect key="frame" x="0.0" y="98.666666666666686" width="375" height="271.33333333333331"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bpZ-Gp-mZU">
+                                    <rect key="frame" x="0.0" y="0.0" width="375" height="271.33333333333331"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mQ6-lO-COM">
+                                            <rect key="frame" x="20" y="0.0" width="335" height="219.33333333333334"/>
+                                            <string key="text">Copyright © 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation. All rights reserved. Other names and brands may be claimed as property of their respective owners. 
+For End User License Agreement, Open Source Licenses Used, and app’s User Guide refer to the</string>
+                                            <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="17"/>
+                                            <color key="textColor" red="0.047058823529411764" green="0.21568627450980393" blue="0.4823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <nil key="highlightedColor"/>
+                                            <string key="userLabel">Copyright © 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or an affiliate of Cypress Semiconductor Corporation. All rights reserved. Other names and brands may be claimed as property of their respective owners.  For End User License Agreement, Open Source Licenses Used, and app’s User Guide refer to the</string>
+                                        </label>
+                                        <button opaque="NO" contentMode="left" contentHorizontalAlignment="left" contentVerticalAlignment="top" buttonType="system" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="0Wz-9p-6IW">
+                                            <rect key="frame" x="20" y="219.33333333333331" width="335" height="32"/>
+                                            <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="17"/>
+                                            <state key="normal" title="AIROC™ Bluetooth® Connect App Website"/>
+                                            <connections>
+                                                <action selector="webLinkButtonTouched:" destination="iN0-l3-epB" eventType="touchUpInside" id="yEY-iE-96h"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                    <constraints>
+                                        <constraint firstItem="mQ6-lO-COM" firstAttribute="leading" secondItem="bpZ-Gp-mZU" secondAttribute="leading" constant="20" id="P5m-H3-gsr"/>
+                                        <constraint firstItem="mQ6-lO-COM" firstAttribute="trailing" secondItem="bpZ-Gp-mZU" secondAttribute="trailing" constant="-20" id="b0g-d0-38i"/>
+                                        <constraint firstItem="0Wz-9p-6IW" firstAttribute="bottom" secondItem="bpZ-Gp-mZU" secondAttribute="bottom" constant="-20" id="ePy-Pj-Mpg"/>
+                                        <constraint firstItem="0Wz-9p-6IW" firstAttribute="trailing" secondItem="mQ6-lO-COM" secondAttribute="trailing" id="edy-Xz-BPj"/>
+                                        <constraint firstItem="mQ6-lO-COM" firstAttribute="bottom" secondItem="0Wz-9p-6IW" secondAttribute="top" id="gwj-UG-wrr"/>
+                                        <constraint firstItem="mQ6-lO-COM" firstAttribute="top" secondItem="bpZ-Gp-mZU" secondAttribute="top" id="gym-xD-xni"/>
+                                        <constraint firstItem="0Wz-9p-6IW" firstAttribute="leading" secondItem="mQ6-lO-COM" secondAttribute="leading" id="iVz-64-XGb"/>
+                                        <constraint firstItem="0Wz-9p-6IW" firstAttribute="top" secondItem="mQ6-lO-COM" secondAttribute="bottom" id="q2I-NZ-KSU"/>
+                                    </constraints>
+                                </view>
+                            </subviews>
+                            <constraints>
+                                <constraint firstItem="bpZ-Gp-mZU" firstAttribute="top" secondItem="qPN-oe-Pz4" secondAttribute="top" id="3rQ-ck-b6U"/>
+                                <constraint firstItem="bpZ-Gp-mZU" firstAttribute="bottom" secondItem="qPN-oe-Pz4" secondAttribute="bottom" id="9O0-Rw-a38"/>
+                                <constraint firstItem="bpZ-Gp-mZU" firstAttribute="trailing" secondItem="qPN-oe-Pz4" secondAttribute="trailing" id="H2q-ZP-n3l"/>
+                                <constraint firstItem="bpZ-Gp-mZU" firstAttribute="leading" secondItem="qPN-oe-Pz4" secondAttribute="leading" id="Nzf-RU-Cvl"/>
+                                <constraint firstItem="bpZ-Gp-mZU" firstAttribute="height" secondItem="qPN-oe-Pz4" secondAttribute="height" id="efo-j1-1Oo"/>
+                                <constraint firstItem="bpZ-Gp-mZU" firstAttribute="width" secondItem="qPN-oe-Pz4" secondAttribute="width" id="yvQ-ZI-FwV"/>
+                            </constraints>
+                        </scrollView>
+                    </subviews>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstItem="vDm-9k-XGR" firstAttribute="trailing" secondItem="Avq-ZI-X6T" secondAttribute="trailing" id="0cF-km-9P0"/>
+                        <constraint firstItem="qPN-oe-Pz4" firstAttribute="bottom" secondItem="Avq-ZI-X6T" secondAttribute="bottom" id="2O0-27-lix"/>
+                        <constraint firstItem="vDm-9k-XGR" firstAttribute="bottom" secondItem="qPN-oe-Pz4" secondAttribute="top" constant="-20" id="7ic-5u-hYm"/>
+                        <constraint firstItem="vDm-9k-XGR" firstAttribute="centerX" secondItem="Avq-ZI-X6T" secondAttribute="centerX" id="AYP-Gq-ejc"/>
+                        <constraint firstItem="qPN-oe-Pz4" firstAttribute="leading" secondItem="Avq-ZI-X6T" secondAttribute="leading" id="DU0-0p-Cr1"/>
+                        <constraint firstItem="qPN-oe-Pz4" firstAttribute="width" secondItem="Avq-ZI-X6T" secondAttribute="width" id="JQP-7U-2W2"/>
+                        <constraint firstItem="qPN-oe-Pz4" firstAttribute="top" secondItem="vDm-9k-XGR" secondAttribute="bottom" constant="20" id="K6j-9B-NaC"/>
+                        <constraint firstItem="vDm-9k-XGR" firstAttribute="top" secondItem="Avq-ZI-X6T" secondAttribute="top" constant="20" id="SdW-bZ-wAp"/>
+                        <constraint firstItem="vDm-9k-XGR" firstAttribute="leading" secondItem="Avq-ZI-X6T" secondAttribute="leading" id="WNT-Tm-77a"/>
+                        <constraint firstItem="qPN-oe-Pz4" firstAttribute="trailing" secondItem="Avq-ZI-X6T" secondAttribute="trailing" id="gkL-DR-m5N"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="Nya-5z-Ekn"/>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="ON9-VS-X3R" firstAttribute="trailing" secondItem="Nya-5z-Ekn" secondAttribute="trailing" id="Ckv-Ln-AzM"/>
+                <constraint firstItem="Avq-ZI-X6T" firstAttribute="top" secondItem="ON9-VS-X3R" secondAttribute="bottom" id="D4S-Qr-LSD"/>
+                <constraint firstItem="Avq-ZI-X6T" firstAttribute="bottom" secondItem="Nya-5z-Ekn" secondAttribute="bottom" id="EFJ-yc-ZbT"/>
+                <constraint firstItem="ON9-VS-X3R" firstAttribute="leading" secondItem="Nya-5z-Ekn" secondAttribute="leading" id="Ixr-Uz-CM8"/>
+                <constraint firstItem="Avq-ZI-X6T" firstAttribute="leading" secondItem="Nya-5z-Ekn" secondAttribute="leading" id="Pnl-Gt-nVJ"/>
+                <constraint firstItem="Avq-ZI-X6T" firstAttribute="trailing" secondItem="Nya-5z-Ekn" secondAttribute="trailing" id="hwY-gT-IbX"/>
+                <constraint firstItem="ON9-VS-X3R" firstAttribute="top" secondItem="Nya-5z-Ekn" secondAttribute="top" id="zYS-uY-GLf"/>
+            </constraints>
+            <connections>
+                <outlet property="appVersionLabel" destination="vDm-9k-XGR" id="WT9-RI-Nu3"/>
+            </connections>
+            <point key="canvasLocation" x="221.73913043478262" y="187.5"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="infineon_logo" width="782" height="343"/>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

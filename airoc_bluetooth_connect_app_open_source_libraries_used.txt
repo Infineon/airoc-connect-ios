@@ -1,0 +1,96 @@
+AIROC™ Bluetooth® Connect App Open Source Libraries
+-----------------------------------------
+
+AIROC™ Bluetooth® Connect App uses few open source libraries to implement some of its features. 
+The details of these open source libraries are documented below:
+
+1. ios-linechart (LCInfoView.h, LCInfoView.m, LCLegendView.h, LCLegendView.m, LCLineChartView.h, LCLineChartView.m, LineChart.h)
+Charting library for iOS
+https://github.com/mruegenberg/ios-linechart
+
+License: 
+https://github.com/mruegenberg/ios-linechart/blob/master/LICENSE
+
+2. objc-utils (UIKit+DrawingHelpers.h, UIKit+DrawingHelpers.m)
+This is a collection of useful classes and extensions for common classes in CoreFoundation and UIKit
+https://github.com/mruegenberg/objc-utils
+
+License:
+https://github.com/mruegenberg/objc-utils/blob/master/LICENSE
+
+3. MRHexKeyboard (MRHexKeyboard.h, MRHexKeyboard.m)
+An iOS keyboard, that supports entering hex-values to the UITextField
+https://github.com/doofyus/HexKeyboard
+
+License: 
+https://github.com/doofyus/HexKeyboard/blob/master/LICENSE
+
+4. KLCPopup (KLCPopup.h, KLCPopup.m)
+KLCPopup is a simple and flexible iOS class for presenting any custom view as a popup. 
+It includes a variety of options for controlling how your popup appears and behaves
+https://github.com/jmascia/KLCPopup
+
+License:
+https://github.com/jmascia/KLCPopup/blob/master/LICENSE
+
+5. MBProgressHUD (MBProgressHUD.h, MBProgressHUD.m)
+MBProgressHUD is an iOS drop-in class that displays a translucent HUD with an indicator and/or labels 
+while work is being done in a background thread
+https://github.com/jdg/MBProgressHUD
+
+License:
+https://github.com/jdg/MBProgressHUD/blob/master/LICENSE
+
+6. Toast for iOS (UIView+Toast.h, UIView+Toast.m)
+Toast is an Objective-C category that adds Android-style toast notifications to the UIView object class. 
+It is intended to be simple, lightweight, and easy to use.
+https://github.com/scalessec/Toast
+
+License:
+https://github.com/scalessec/Toast/blob/master/license
+
+7. iCarousel (iCarousel.h, iCarousel.m)
+iCarousel is a class designed to simplify the implementation of various types of carousel (paged, scrolling views) 
+on iPhone, iPad and Mac OS.
+https://github.com/nicklockwood/iCarousel
+
+License:
+https://github.com/nicklockwood/iCarousel/blob/master/LICENCE.md
+
+8. Reachability (Reachability.h, Reachability.m)
+This is a drop-in replacement for Apple's Reachability class. 
+It is ARC-compatible, and it uses the new GCD methods to notify of network interface changes.
+https://github.com/tonymillion/Reachability
+
+License:
+https://github.com/tonymillion/Reachability/blob/master/LICENCE.txt
+
+9. DropDownView (DropDownView.h, DropDownView.m)
+Table based drop down view.
+
+License:
+Created by Akhil Subrahmanian.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+10. Roboto fonts (Roboto-Bold.ttf, Roboto-Medium.ttf, Roboto-Regular.ttf)
+https://fonts.google.com/specimen/Roboto
+
+License:
+https://fonts.google.com/specimen/Roboto#license
