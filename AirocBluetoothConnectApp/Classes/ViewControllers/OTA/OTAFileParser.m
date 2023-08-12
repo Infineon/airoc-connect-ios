@@ -77,7 +77,7 @@
             fileContentsArray = [self removeEmptyRowsAndJunkDataFromArray:fileContentsArray];
             NSString * fileHeader = [fileContentsArray objectAtIndex:0];
             
-            if (fileHeader.length >= FILE_HEADER_MAX_LENGTH)
+            if (fileHeader.length <= FILE_HEADER_MAX_LENGTH)
             {
                 //Parse header
                 [fileHeaderDict setObject:[NSNumber numberWithInt:iFileVersionTypeCYACD] forKey:FILE_VERSION];//Version of 0 for CYACD files
