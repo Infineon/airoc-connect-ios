@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -70,18 +70,18 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     sliderViewFrameHeight = _sliderView.frame.size.height;  // Slider height is stored to change height for Ipad
-    
+
     // Initializing the position of arrows in slider
     [self initiallizeView];
     [self.view layoutIfNeeded];
-    
+
     // Initialize model
     [self initSliderModel];
-    
+
     for (UIImageView * arrowImage in _greyArrowImageViews) {
         [arrowImage setHidden:NO];
     }
-    [_sliderView setBackgroundColor:[UIColor colorWithRed:130.0/255.0 green:130.0/255.0 blue:130.0/255.0 alpha:1.0]];
+    _sliderView.backgroundColor = COLOR_PRIMARY;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -95,7 +95,7 @@
 
 -(void) viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self]) {
         [sliderModel stopUpdate];   // stop receiving characteristic value when the user exits the screen
     }
@@ -103,7 +103,7 @@
 
 /*
  #pragma mark - Navigation
- 
+
  // In a storyboard-based application, you will often want to do a little preparation before navigation
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
  // Get the new view controller using [segue destinationViewController].
@@ -121,7 +121,7 @@
     if (!sliderModel) {
         sliderModel = [[capsenseModel alloc] init];;
     }
-    
+
     [sliderModel startDiscoverCharacteristicWithUUID:_sliderCharacteristicUUID completionHandler:^(BOOL success, CBService *service, NSError *error) {
         if (success) {
             // Start receiving characteristic value when characteristic found successfully
@@ -144,7 +144,7 @@
             if (success){
                 @synchronized(sself->sliderModel) {
                     float sliderValue = sself->sliderModel.capsenseSliderValue;
-                    
+
                     sself->isFingerRemoved = sliderValue == 255;
                     if (!sself->isFingerRemoved) {
                         sself->currentSliderValue = sliderValue;
@@ -165,7 +165,7 @@
 -(void) initiallizeView {
     // Calculate the factor by which the arrow should be moved
     arrowWidthMultiplier = [self calculateArrowWidthMultiplier];
-    
+
     // Initially hiding all the imageViews
     _firstArrowLeadingConstraint.constant = -_firstArrowImageView.frame.size.width + 10;
     _secondArrowLeadingConstraint.constant = _thirdArrowLeadingConstraint.constant = _fourthArrowLeadingConstraint.constant = _fifthArrowLeadingConstraint.constant = -_firstArrowImageView.frame.size.width;
@@ -181,51 +181,52 @@
  *
  */
 -(void)changeSliderToPosition:(float)value isFingerRemoved:(BOOL)isFingerRemoved {
-    
-    const float totalWidth = self.view.frame.size.width;
+
+//    const float totalWidth = self.view.frame.size.width;
+    const float totalWidth = _sliderView.frame.size.width;
     const float imageWidth = _firstArrowImageView.frame.size.width;
     const float mult = arrowWidthMultiplier;
     const float d = (20 * mult - imageWidth) * 5 / 4;
-    
+
     // The range of characteristic value is checked to move the respective arrow
     if (value <= 20) {
-        
+
         _firstArrowLeadingConstraint.constant = totalWidth - imageWidth - (100 - value) * mult + 10;
         _secondArrowLeadingConstraint.constant = _thirdArrowLeadingConstraint.constant = _fourthArrowLeadingConstraint.constant = _fifthArrowLeadingConstraint.constant = -imageWidth;
     }
     else if (value > 20 && value <= 40){
-        
+
         _firstArrowLeadingConstraint.constant = 0;
         _secondArrowLeadingConstraint.constant = _thirdArrowLeadingConstraint.constant = _fourthArrowLeadingConstraint.constant = _fifthArrowLeadingConstraint.constant = totalWidth - imageWidth - (100 - value) * mult;
     }
     else if (value > 40 && value <= 60){
-        
+
         _firstArrowLeadingConstraint.constant = 0;
         _secondArrowLeadingConstraint.constant = _firstArrowLeadingConstraint.constant + imageWidth + d;
         _thirdArrowLeadingConstraint.constant = _fourthArrowLeadingConstraint.constant = _fifthArrowLeadingConstraint.constant = totalWidth - imageWidth - (100 - value) * mult;
     }
     else if (value > 60 && value <= 80){
-        
+
         _firstArrowLeadingConstraint.constant = 0;
         _secondArrowLeadingConstraint.constant = _firstArrowLeadingConstraint.constant + imageWidth + d;
         _thirdArrowLeadingConstraint.constant = _secondArrowLeadingConstraint.constant + imageWidth + d;
         _fourthArrowLeadingConstraint.constant = _fifthArrowLeadingConstraint.constant = totalWidth - imageWidth - (100 - value) * mult;
     }
     else if (value > 80 && value <= 100){
-        
+
         _firstArrowLeadingConstraint.constant = 0;
         _secondArrowLeadingConstraint.constant = _firstArrowLeadingConstraint.constant + imageWidth + d;
         _thirdArrowLeadingConstraint.constant = _secondArrowLeadingConstraint.constant + imageWidth + d;
         _fourthArrowLeadingConstraint.constant = _thirdArrowLeadingConstraint.constant + imageWidth + d;
         _fifthArrowLeadingConstraint.constant = totalWidth - imageWidth - (100 - value) * mult;
     }
-    
+
     // Animate the view
     [self.view setNeedsLayout];
     [UIView animateWithDuration:0.05 animations:^{
         [self.view layoutIfNeeded];
     }];
-    
+
     // Reset the view when the user remove finger
     if (isFingerRemoved) {
         for (UIImageView *arrowImage in _greyArrowImageViews) {
@@ -234,7 +235,7 @@
         [_sliderView setBackgroundColor:[UIColor colorWithRed:130.0/255.0 green:130.0/255.0 blue:130.0/255.0 alpha:1.0]];
     } else {
         if (![[_greyArrowImageViews objectAtIndex:0] isHidden]) {
-            [_sliderView setBackgroundColor:[UIColor colorWithRed:12.0/255.0 green:55.0/255.0 blue:123.0/255.0 alpha:1.0]];
+            _sliderView.backgroundColor = COLOR_PRIMARY;
             for (UIImageView * arrowImage in _greyArrowImageViews) {
                 [arrowImage setHidden:YES];
             }
@@ -267,10 +268,12 @@
     // Multiplier is different for Ipad since the image size is different
     if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ) {
         _sliderViewHeightConstraint.constant = sliderViewFrameHeight * 2;
-        _firstArrowWidthConstraint.constant = self.view.frame.size.width / 5;
-        [self.view layoutIfNeeded];
     }
-    float multiplier = self.view.frame.size.width / 100;
+    _firstArrowWidthConstraint.constant = self.view.frame.size.width / 5;
+    [self.view layoutIfNeeded];
+    
+    const int VIEW_TOTAL_WIDTH_PERCENT = 100;
+    float multiplier = _sliderView.frame.size.width / VIEW_TOTAL_WIDTH_PERCENT;
     return multiplier;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -41,7 +41,7 @@
 /*!
  *  @class DeviceInformationVC
  *
- *  @discussion  Class to handle the user interactions and UI updates for device information service  
+ *  @discussion  Class to handle the user interactions and UI updates for device information service
  *
  */
 
@@ -58,7 +58,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+
     _deviceInfoTableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
     // Initialize device information model
     [self initModel];
@@ -133,19 +133,19 @@
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     DeviceInformationTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"deviceInfoCell"];
-    
+
     if (cell == nil)
     {
         cell = [[DeviceInformationTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"deviceInfoCell"];
     }
     NSString *deviceCharaName = [deviceInfoCharacteristicsArray objectAtIndex:[indexPath row]];
     cell.deviceCharacteristicNameLabel.text = deviceCharaName;
-    
+
     if ([deviceInfoModel.deviceInfoCharValueDictionary objectForKey:deviceCharaName] != nil)
     {
         cell.deviceCharacteristicValueLabel.text = [deviceInfoModel.deviceInfoCharValueDictionary objectForKey:deviceCharaName];
     }
-        
+
     return cell;
 }
 

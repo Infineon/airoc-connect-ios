@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "carousel_capsense_proximity.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

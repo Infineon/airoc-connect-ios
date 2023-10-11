@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -64,7 +64,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     [self initializeView];
-    
+
     // Initialize the model for blood pressure service
     [self initBPModel];
 }
@@ -114,7 +114,7 @@
     if (!mBPModel) {
         mBPModel = [[BPModel alloc] init];
     }
-    
+
     __weak __typeof(self) wself = self;
     [mBPModel startDiscoverChar:^(BOOL success, NSError *error) {
         __strong __typeof(self) sself = wself;
@@ -137,12 +137,12 @@
     if(!sender.selected) {
         [_systolicPressureUnitLabel setHidden:NO];
         [_diastolicPressureUnitLabel setHidden:NO];
-        
+
         // Update value only if the characteristic discovered successfully
         if (isCharcteristicDiscovered) {
             [self updateBPCharacteristic];
         }
-        
+
         sender.selected = YES;
     } else {
         sender.selected = NO;

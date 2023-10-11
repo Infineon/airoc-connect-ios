@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -88,10 +88,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-   
+
     // Do any additional setup after loading the view.
     [self initializeView];
-    
+
     // Initialize glucose model
     [self initGlucoseModel];
 }
@@ -110,12 +110,13 @@
 -(void) viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self])
     {
         // stop receiving characteristic value when the user exits the screen
         [mGlucoseModel stopUpdate];
     }
+    [recordDropDown hideView];
 }
 
 /*
@@ -139,24 +140,24 @@
 {
     _additionalInfoButton.hidden = YES;
     _selectedRecordNameTextfield.delegate = self;
-   
+
     if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
     {
         _glucoseImageViewHeightConstraint.constant += DEFAULT_SIZE_NORMALISATION_CONSTANT_FOR_IPAD; // Change Image size
         _recordNameTextFieldWidthConstraint.constant =  _recordNameTextFieldWidthConstraint.constant * 1.75;
         [self.view layoutIfNeeded];
     }
-    
+
     if (!IS_IPHONE_4_OR_LESS) {
         _topViewHeightConstraint.constant = _topViewHeightConstraint.constant + 15.0;
         [self.view layoutIfNeeded];
     }
-    
+
     CALayer *bottomLayer = [CALayer layer];
     bottomLayer.frame = CGRectMake(0.0, _selectedRecordNameTextfield.frame.size.height-1.0, _selectedRecordNameTextfield.frame.size.width, 1.0);
-    bottomLayer.backgroundColor = BLUE_COLOR.CGColor;
+    bottomLayer.backgroundColor = COLOR_PRIMARY.CGColor;
     [_selectedRecordNameTextfield.layer addSublayer:bottomLayer];
-    
+
     _selectedRecordNameTextfield.text = NO_RECORD;
 }
 
@@ -193,7 +194,7 @@
  *
  */
 -(IBAction)dropDownButtonClicked:(UIButton *)sender{
-    
+
     if (mGlucoseModel.recordNameArray.count > 0) {
         [self showDropDownWithButton:sender];
     }
@@ -206,24 +207,24 @@
  *
  */
 -(void) showDropDownWithButton:(UIButton *)dropDownButton{
-    
+
     if (!dropDownButton.selected) {
-       
+
         if (recordDropDown) {
-            
+
             [recordDropDown removeFromSuperview];
             recordDropDown = nil;
         }
-        
-        recordDropDown = [[DropDownView alloc] initWithDelegate:self titles:mGlucoseModel.recordNameArray onButton:dropDownButton withFrame:_selectedRecordNameTextfield.frame];
-        
+
+        recordDropDown = [[DropDownView alloc] initWithDelegate:self titles:mGlucoseModel.recordNameArray onButton:dropDownButton underLineEditFrame:_selectedRecordNameTextfield.frame];
+
         [recordDropDown showView];
-        
+
     }else
     {
         [recordDropDown hideView];
     }
-    
+
 }
 
 /*
@@ -233,11 +234,11 @@
  *
  */
 -(IBAction) readLastButtonClicked:(UIButton *)sender{
-    
+
     if (isCharacteritsticsFound) {
         _readAllRecordButton.enabled = NO;
         _deleteAllRecordButton.enabled = NO;
-        
+
         __weak __typeof(self) wself = self;
         [mGlucoseModel updateCharacteristicWithHandler:^(BOOL success, NSError *error) {
             __strong __typeof(self) sself = wself;
@@ -252,13 +253,13 @@
                 }
                 sself.readAllRecordButton.enabled = YES;
                 sself.deleteAllRecordButton.enabled = YES;
-                
+
                 if (sself->mGlucoseModel.recordNameArray.count > 0) {
                     sself.selectedRecordNameTextfield.text = [sself->mGlucoseModel.recordNameArray lastObject];
                 }
             }
         }];
-        
+
         [mGlucoseModel writeRACPCharacteristicWithValueString:READ_LAST_RECORD_COMMAND];
     }
 }
@@ -273,20 +274,20 @@
     if (isCharacteritsticsFound) {
         _readLastRecordButton.enabled = NO;
         _deleteAllRecordButton.enabled = NO;
-        
+
         __weak __typeof(self) wself = self;
         [mGlucoseModel updateCharacteristicWithHandler:^(BOOL success, NSError *error) {
             __strong __typeof(self) sself = wself;
             if (sself) {
                 sself.readLastRecordButton.enabled = YES;
                 sself.deleteAllRecordButton.enabled = YES;
-                
+
                 if (sself->mGlucoseModel.glucoseRecords.count > 0) {
                     NSDictionary *dataDict = [sself->mGlucoseModel getGlucoseData:[sself->mGlucoseModel.glucoseRecords lastObject]];
                     sself->selectedRecordDict = dataDict;
                     [sself updateGlucoseTextFieldsWithDataDict:dataDict];
                 }
-                
+
                 if (sself->mGlucoseModel.recordNameArray.count > 0) {
                     sself.selectedRecordNameTextfield.text = [sself->mGlucoseModel.recordNameArray lastObject];
                 }
@@ -325,7 +326,7 @@
  *
  */
 -(IBAction)clearButtonClicked:(UIButton *)sender{
-    
+
     [self updateGlucoseTextFieldsWithDataDict:nil];
 }
 
@@ -336,9 +337,9 @@
  *
  */
 -(IBAction)additionalInfoButtonClicked:(id)sender{
-    
+
     GlucoseContextVC *contextVC = [self.storyboard instantiateViewControllerWithIdentifier:CONTEXT_VC_ID];
-    
+
     for (NSData *data in mGlucoseModel.contextInfoArray) {
         if ([[selectedRecordDict objectForKey:SEQUENCE_NUMBER] integerValue] == [[[mGlucoseModel getGlucoseContextInfoFromData:data] objectForKey:SEQUENCE_NUMBER] integerValue]) {
             contextVC.glucoseContextDict = [mGlucoseModel getGlucoseContextInfoFromData:data];
@@ -357,33 +358,33 @@
 -(void) updateGlucoseTextFieldsWithDataDict:(NSDictionary *)glucoseDataDict
 {
     if (glucoseDataDict == nil) {
-        
+
         // Clearing the labels
         _recordingTimeLabel.text = @"";
         _typeLabel.text = @"";
         _concentrationValueLabel.text = @"";
         _sampleLocationLabel.text = @"";
         _selectedRecordNameTextfield.text = NO_RECORD;
-        
+
         // Clear the previous records
         [mGlucoseModel removePreviousRecords];
         _additionalInfoButton.hidden = YES;
     }
     else{
-        
+
         // Update values in datafields
-        
+
         _recordingTimeLabel.text = [glucoseDataDict objectForKey:BASE_TIME];
         _typeLabel.text = [glucoseDataDict objectForKey:TYPE];
-        
+
         if ([[glucoseDataDict objectForKey:CONCENTRATION_VALUE] floatValue]) {
             _concentrationValueLabel.text = [NSString stringWithFormat:@"%@ %@",[glucoseDataDict objectForKey:CONCENTRATION_VALUE],[glucoseDataDict objectForKey:CONCENTRATION_UNIT]];
         }
         else
             _concentrationValueLabel.text = [NSString stringWithFormat:@"%@",[glucoseDataDict objectForKey:CONCENTRATION_VALUE]];
-        
+
         _sampleLocationLabel.text = [glucoseDataDict objectForKey:SAMPLE_LOCATION];
-        
+
         if ([[glucoseDataDict objectForKey:CONTEXT_INFO_PRESENT] boolValue]) {
             _additionalInfoButton.hidden = NO;
         }
@@ -406,9 +407,9 @@
                         [sself->recordDropDown removeSubviews];
                         sself->recordDropDown = nil;
                     }
-                    
-                    sself->recordDropDown = [[DropDownView alloc] initWithDelegate:sself titles:sself->mGlucoseModel.recordNameArray onButton:sself.dropDownButton withFrame:sself.selectedRecordNameTextfield.frame];
-                    
+
+                    sself->recordDropDown = [[DropDownView alloc] initWithDelegate:sself titles:sself->mGlucoseModel.recordNameArray onButton:sself.dropDownButton underLineEditFrame:sself.selectedRecordNameTextfield.frame];
+
                     [sself->recordDropDown showView];
                 }
             }
@@ -425,10 +426,10 @@
  *
  */
 -(void)dropDown:(DropDownView*)dropDown valueSelected:(NSString*)value index:(int) index{
-    
+
     _selectedRecordNameTextfield.text = value;
     NSDictionary *dataDict = [mGlucoseModel getGlucoseData:[mGlucoseModel.glucoseRecords objectAtIndex:index]];
-    
+
     selectedRecordDict = dataDict;
     [self updateGlucoseTextFieldsWithDataDict:dataDict];
 }
@@ -438,7 +439,7 @@
 
 
 -(BOOL)textFieldShouldBeginEditing:(UITextField *)textField{
-    
+
     if (mGlucoseModel.recordNameArray.count > 0) {
         [self showDropDownWithButton:_dropDownButton];
     }

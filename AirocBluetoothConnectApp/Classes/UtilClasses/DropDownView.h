@@ -60,7 +60,7 @@ typedef enum DropDownType
 @property (weak, nonatomic) IBOutlet UIImageView *dropDownImage;
 
 -(id) initWithDelegate:(id) delegate titles:(NSArray*) titleArray onButton:(UIButton*)sender;
--(id) initWithDelegate:(id) delegate titles:(NSArray*) titleArray onButton:(UIButton*)sender withFrame:(CGRect)frame;
+-(id) initWithDelegate:(id) delegate titles:(NSArray*) titleArray onButton:(UIButton*)sender underLineEditFrame:(CGRect)frame;
 
 -(id) initWithDelegate:(id) delegate titles:(NSArray*) titleArray onButton:(UIButton*)sender frame:(CGRect)frame font:(UIFont*) font highLightedRow:(int) row;
 

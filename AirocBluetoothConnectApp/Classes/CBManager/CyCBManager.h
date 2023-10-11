@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -137,9 +137,9 @@
 @end
 
 
-@interface CyCBManager : NSObject 
+@interface CyCBManager : NSObject
 {
-    
+
 }
 
 @property (strong,nonatomic)  id<cbCharacteristicManagerDelegate> cbCharacteristicDelegate;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -60,7 +60,6 @@
 @property (weak, nonatomic) IBOutlet UILabel *heartRateLabel;
 @property (weak, nonatomic) IBOutlet UILabel *expendedEnergyLabel;
 @property (weak, nonatomic) IBOutlet UILabel *RRIntervalLabel;
-@property (weak, nonatomic) IBOutlet UIView *heartView; // Parent of heartImageView
 @property (weak, nonatomic) IBOutlet UIImageView *heartImageView;
 @property (weak, nonatomic) IBOutlet UILabel *sensorLocationLabel;
 @property (weak, nonatomic) IBOutlet UILabel *sensorContactLabel;
@@ -78,21 +77,16 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
-    [self initializeView];
-    
-    // Start the heart image animation when the user enters the screen
-    [self animateHeartImage];
-    
+
     // Initialize model
     [self initHRMModel];
-    
+
     hrmDataArray = [NSMutableArray array];
     timeDataArray = [NSMutableArray array];
-    
+
     // Initialize time
     startTime = [NSDate date];
-    
+
     previousTimeInterval = 0;
     xAxisTimeInterval = 1.0;
     devicesOrientation = [UIDevice currentDevice].orientation;
@@ -106,17 +100,14 @@
 -(void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [[super navBarTitleLabel] setText:HEART_RATE_MEASUREMENT];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterForeground:) name:UIApplicationDidBecomeActiveNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
 }
 
 -(void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
-    
+
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
-    
+
     if (![self.navigationController.viewControllers containsObject:self]) {
         [hrmModel stopUpdate]; //   Stop receiving characteristic value when the user exits the screen
         [kPopup dismiss:YES];
@@ -124,7 +115,7 @@
 }
 /*
  #pragma mark - Navigation
- 
+
  // In a storyboard-based application, you will often want to do a little preparation before navigation
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
  // Get the new view controller using [segue destinationViewController].
@@ -170,50 +161,6 @@
 }
 
 /*!
- *  @method initializeView
- *
- *  @discussion Method to optimize the UI for Ipad screens.
- *
- */
--(void) initializeView {
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        // Change the image size
-        _flameImageHeightConstraint.constant +=  DEFAULT_SIZE_NORMALISATION_CONSTANT_FOR_IPAD;
-        _ecgGraphImageHeightConstraint.constant += DEFAULT_SIZE_NORMALISATION_CONSTANT_FOR_IPAD ;
-        _heartImageHeightConstraint.constant += DEFAULT_SIZE_NORMALISATION_CONSTANT_FOR_IPAD;
-        _heartImageWidthConstraint.constant += DEFAULT_SIZE_NORMALISATION_CONSTANT_FOR_IPAD;
-        _heartRateLabelLeadingConstraint.constant += DEFAULT_SIZE_NORMALISATION_CONSTANT_FOR_IPAD;
-        [self.view layoutIfNeeded];
-    }
-    heartImageWidth = _heartImageWidthConstraint.constant;
-    heartImageHeight = _heartImageHeightConstraint.constant;
-}
-
-/*!
- *  @method animateHeartImage
- *
- *  @discussion Method to handle the animation of heart image.
- *
- */
--(void) animateHeartImage {
-    __weak typeof(self) wself = self;
-    [UIView animateWithDuration:2
-                          delay:1.0
-                        options:UIViewAnimationOptionAutoreverse | UIViewAnimationOptionRepeat
-                     animations:^{
-        __strong typeof(self) sself = wself;
-        if (sself) {
-            sself.heartImageWidthConstraint.constant = sself->heartImageWidth / 2;
-            sself.heartImageHeightConstraint.constant = sself->heartImageHeight / 2;
-            [sself.heartImageView setNeedsLayout];
-            [sself.heartImageView layoutIfNeeded];
-        }
-    } completion:^(BOOL finished) {
-        //NOOP
-    }];
-}
-
-/*!
  *  @method updateHRM
  *
  *  @discussion Method to Update UI related to characteristic
@@ -228,22 +175,22 @@
     _sensorContactLabel.text = hrmModel.sensorContact;
     _RRIntervalLabel.text = hrmModel.RRinterval;
     _expendedEnergyLabel.text = hrmModel.energyExpended;
-    
+
     // Handle the characteristic values to update graph
     if(hrmModel.bpmValue) {
         NSTimeInterval timeInterval = fabs([startTime timeIntervalSinceNow]);
-        
+
         if (previousTimeInterval == 0) {
             previousTimeInterval = timeInterval;
         }
-        
+
         if (timeInterval > previousTimeInterval) {
             xAxisTimeInterval = timeInterval - previousTimeInterval;
         }
-        
+
         [timeDataArray addObject:@(timeInterval)];
         [hrmDataArray addObject:@(hrmModel.bpmValue)];
-        
+
         if(myChart && kPopup.isShowing) {
             [self checkGraphPointsCount];
             [myChart updateLineGraph:timeDataArray Y:hrmDataArray ];
@@ -262,7 +209,7 @@
 -(void)shareScreen:(id)sender {
     UIImage *screenShot = [Utilities captureScreenShot];
     [kPopup dismiss:YES];
-    
+
     CGRect rect = [(UIButton *)sender frame];
     CGRect newRect = CGRectMake(rect.origin.x, rect.origin.y + (self.view.frame.size.height/2), rect.size.width, rect.size.height);
     [self showActivityPopover:[self saveImage:screenShot] rect:newRect excludedActivities:nil];
@@ -283,16 +230,14 @@
     myChart.graphTitleLabel.text = HEART_RATE_GRAPH_HEADER;
     [myChart addXLabel:TIME yLabel:HEART_RATE_YLABEL];
     myChart.delegate = self;
-    
+
     if([timeDataArray count]) {
         [self checkGraphPointsCount];
         [myChart updateLineGraph:timeDataArray Y:hrmDataArray ];
-        
+
         KLCPopupLayout layout = KLCPopupLayoutMake(KLCPopupHorizontalLayoutCenter,
-                                                   KLCPopupVerticalLayoutBottom);
-        if(kPopup) {
-            kPopup =  nil;
-        }
+                                                   KLCPopupVerticalLayoutCenter);
+
         kPopup = [KLCPopup popupWithContentView:myChart
                                        showType:KLCPopupShowTypeBounceIn
                                     dismissType:KLCPopupDismissTypeBounceOut
@@ -318,34 +263,10 @@
     } else {
         myChart.chartView.setXmin = NO;
     }
-    
+
     if (hrmDataArray.count > MAX_GRAPH_POINTS) {
         hrmDataArray = [[hrmDataArray subarrayWithRange:NSMakeRange( hrmDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
     }
-}
-
-/*!
- *  @method applicationDidEnterForeground:
- *
- *  @discussion Method to handle the heart image animation while application enter in foreground.
- *
- */
--(void)applicationDidEnterForeground:(NSNotification *) notification {
-    [self animateHeartImage];
-}
-
-
-/*!
- *  @method applicationDidEnterBackground:
- *
- *  @discussion Method to handle heart image animation while the app goes to background
- *
- */
--(void)applicationDidEnterBackground:(NSNotification *) notification {
-    _heartImageHeightConstraint.constant = heartImageHeight;
-    _heartImageWidthConstraint.constant = heartImageWidth;
-    [_heartImageView.layer removeAllAnimations];
-    [self.view layoutIfNeeded];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -358,7 +279,7 @@
             UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
             BOOL rotated = [sself didDeviceRotate:orientation];
             [sself setDeviceOrientation:orientation];
-            
+
             //    if (IS_IPAD && kPopup.isShowing && [UIDevice currentDevice].orientation != UIDeviceOrientationFaceUp) {
             if (IS_IPAD && sself->kPopup.isShowing && rotated) {
                 [sself->kPopup dismiss:NO];

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -62,7 +62,7 @@
     content.body = body;
     content.sound = [UNNotificationSound defaultSound];
     content.badge = [NSNumber numberWithInteger:([UIApplication sharedApplication].applicationIconBadgeNumber + 1)];
-    
+
     // Deliver the notification in five seconds.
     UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger
                                                   triggerWithTimeInterval:5.f

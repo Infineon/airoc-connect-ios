@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -92,7 +92,7 @@
 -(void)onPauseTouched:(id)sender
 {
     UIButton *pButton = (UIButton*)sender;
-    
+
     if(pButton.selected)
     {
         isPauseState = NO;
@@ -101,9 +101,9 @@
     {
         isPauseState = YES;
     }
-        
+
     pButton.selected = !pButton.selected;
-    
+
 }
 
 /*!
@@ -115,30 +115,30 @@
 -(void)initLineGraph:(CGRect)bounds
 {
     /* configuring adding pause/resume button */
-    
+
     pauseButton = [[UIButton alloc] initWithFrame:CGRectMake(0, bounds.size.height - PAUSE_BUTTON_HEIGHT, bounds.size.width/2, PAUSE_BUTTON_HEIGHT)];
     [pauseButton setTitle:PAUSE forState:UIControlStateNormal];
     [pauseButton setTitle:RESUME forState:UIControlStateSelected];
-    [pauseButton setBackgroundColor:BLUE_COLOR];
+    [pauseButton setBackgroundColor:COLOR_PRIMARY];
     [pauseButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [pauseButton setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
     [pauseButton addTarget:self action:@selector(onPauseTouched:) forControlEvents:UIControlEventTouchUpInside];
     pauseButton.layer.cornerRadius = 10;
     [self addSubview:pauseButton];
-    
+
     /*  configuring share button for graph */
-    
+
     shareButton = [[UIButton alloc] initWithFrame:CGRectMake( bounds.size.width/2, bounds.size.height - PAUSE_BUTTON_HEIGHT, bounds.size.width/2, PAUSE_BUTTON_HEIGHT)];
     [shareButton setTitle:SHARE forState:UIControlStateNormal];
-    [shareButton setBackgroundColor:BLUE_COLOR];
+    [shareButton setBackgroundColor:COLOR_PRIMARY];
     [shareButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [shareButton addTarget:self action:@selector(onShareButtonClicked:) forControlEvents:UIControlEventTouchUpInside];
     shareButton.layer.cornerRadius = 10;
     [self addSubview:shareButton];
-    
+
     bgScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, bounds.size.width, bounds.size.height- PAUSE_BUTTON_HEIGHT)];
     bgScrollView.contentSize =bgScrollView.frame.size;
-    
+
     _chartView = [[LCLineChartView alloc] initWithFrame:CGRectMake(20, 20, bgScrollView.frame.size.width-40, bgScrollView.frame.size.height-20)];
     _chartView.yMin = 0;
     _chartView.yMax = -100;
@@ -148,25 +148,25 @@
     xLabel = [[UILabel alloc] initWithFrame:CGRectMake(bounds.size.width-AXIS_LABEL_WIDTH,bounds.size.height-PAUSE_BUTTON_HEIGHT- AXIS_LABEL_HEIGHT, AXIS_LABEL_WIDTH, AXIS_LABEL_HEIGHT)];
     xLabel.font = [UIFont fontWithName:FONT size:10];
     xLabel.backgroundColor = [UIColor clearColor];
-    
+
     yLabel = [[UILabel alloc] initWithFrame:CGRectMake(-58, (_chartView.frame.size.height/2)-40, AXIS_LABEL_WIDTH+40, AXIS_LABEL_HEIGHT)];
     yLabel.font = [UIFont fontWithName:FONT size:10];
     yLabel.backgroundColor = [UIColor clearColor];
     [yLabel setTransform:CGAffineTransformMakeRotation(-M_PI / 2)];
-    
+
     _graphTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake((self.bounds.size.width/2.0)-(GRAPH_TITLE_WIDTH/2.0) , 1, GRAPH_TITLE_WIDTH, AXIS_LABEL_HEIGHT-3)];
     _graphTitleLabel.font = [UIFont fontWithName:FONT size:10];
     _graphTitleLabel.backgroundColor = [UIColor whiteColor];
     _graphTitleLabel.textAlignment = NSTextAlignmentCenter;
-    
+
     [_chartView addSubview:yLabel];
-    
+
     [bgScrollView addSubview:_chartView];
     [self addSubview:bgScrollView];
     [self addSubview:xLabel];
     [self addSubview:_graphTitleLabel];
 
-    [self setBackgroundColor:[UIColor colorWithRed:170.0/255.0 green:170.0/255.0 blue:170.0/255.0 alpha:0.7]];
+//    [self setBackgroundColor:[UIColor colorWithRed:170.0/255.0 green:170.0/255.0 blue:170.0/255.0 alpha:0.7]];
 
 }
 
@@ -226,7 +226,7 @@
     dataTwo.title = chartTitle;
     dataTwo.color = [UIColor darkGrayColor];
     dataTwo.itemCount = [xValues count];
-    
+
     for(NSString *axisVal in xValues)
     {
         if([axisVal floatValue] < dataTwo.xMin)
@@ -238,11 +238,11 @@
             dataTwo.xMax = [axisVal floatValue];
         }
     }
-    
+
     if (_chartView.setXmin) {
         _chartView.xMin = [[xValues objectAtIndex:0] floatValue];
     }
-    
+
     dataTwo.getData = ^(NSUInteger item) {
         float x = [xValues[item] floatValue];
         float y = [yValues[item] floatValue];//powf(2, x / 7);
@@ -250,10 +250,10 @@
         NSString *label2 = [NSString stringWithFormat:@"%@", yValues[item]];
         return [LCLineChartDataItem dataItemWithX:x y:y xLabel:label1 dataLabel:label2];
     };
-    
-        
+
+
     // "Y" Axis Handling
-    
+
     for(NSString *axisVal in yValues)
     {
         if([axisVal floatValue] < _chartView.yMin)
@@ -265,12 +265,12 @@
             _chartView.yMax = [axisVal floatValue];
         }
     }
-    
-    
+
+
     float valDiff = _chartView.yMax  - _chartView.yMin ;
     valDiff = valDiff / Y_AXIS_POINT_COUNT;
     NSMutableArray *yAxisPlots = [NSMutableArray new];
-    
+
     if (_chartView.yMin >= 0.0)
     {
         for(int index = 1 ; index <= Y_AXIS_POINT_COUNT ;index++)
@@ -286,7 +286,7 @@
             {
                 valDiff = -1 * _chartView.yMin;
             }
-            
+
             for(int index = 1 ; index <= Y_AXIS_POINT_COUNT ;index++)
             {
                 [yAxisPlots addObject:[NSString stringWithFormat:@"%0.2f",_chartView.yMin + (index - 1) *( valDiff)]];
@@ -301,16 +301,16 @@
             {
                 valDiff = -1 * _chartView.yMin;
             }
-            
+
             for(int index = 1 ; index <= Y_AXIS_POINT_COUNT ;index++)
             {
                 [yAxisPlots addObject:[NSString stringWithFormat:@"%0.2f",_chartView.yMin + (index - 1) * valDiff]];
             }
         }
     }
-   
+
     _chartView.ySteps = yAxisPlots;
-    
+
     if ([xValues count]>Y_AXIS_POINT_COUNT)
     {
         int widthCounter = (int) [xValues count]/Y_AXIS_POINT_COUNT ;
@@ -323,9 +323,9 @@
         {
             widthOffset++;
             [self updateFrameSize:widthOffset];
-           
+
         }
-        
+
     }
     _chartView.data =  @[dataTwo];
     _chartView.xStepsCount = [xValues count];

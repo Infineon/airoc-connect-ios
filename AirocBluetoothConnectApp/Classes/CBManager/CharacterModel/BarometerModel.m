@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -43,7 +43,7 @@
 
 @interface BarometerModel () <cbCharacteristicManagerDelegate>
 {
-    
+
     CBCharacteristic *sensorTypeCharacteristic, *sensorScanIntervalCharacteristic, *dataAccumulationCharacterstic, *barometerReadingCharacteristic, *indicationThresholdCharacteristic;
 }
 
@@ -62,11 +62,11 @@
 
 -(void) stopUpdate
 {
-    
+
     if (barometerReadingCharacteristic != nil)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:BAROMETER_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:barometerReadingCharacteristic.UUID] descriptor:nil operation:STOP_NOTIFY];
-        
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:NO forCharacteristic:barometerReadingCharacteristic];
     }
 }
@@ -102,7 +102,7 @@
         {
             indicationThresholdCharacteristic = characteristic;
         }
-        
+
     }
 
 }
@@ -118,11 +118,11 @@
     if (barometerReadingCharacteristic != nil)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:barometerReadingCharacteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:barometerReadingCharacteristic.UUID] descriptor:nil operation:START_NOTIFY];
-        
-        
+
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:barometerReadingCharacteristic];
     }
-    
+
 }
 
 /*!
@@ -134,28 +134,28 @@
 
 -(void) readValueForCharacteristics
 {
-    
+
     if (sensorTypeCharacteristic != nil)
     {
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:sensorTypeCharacteristic];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ANALOG_TEMPERATURE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:sensorTypeCharacteristic.UUID] descriptor:nil operation:READ_REQUEST];
     }
-    
+
     if (sensorScanIntervalCharacteristic != nil)
     {
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:sensorScanIntervalCharacteristic];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ANALOG_TEMPERATURE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:sensorScanIntervalCharacteristic.UUID] descriptor:nil operation:READ_REQUEST];
     }
-    
+
     if (dataAccumulationCharacterstic != nil)
     {
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:dataAccumulationCharacterstic];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ANALOG_TEMPERATURE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:dataAccumulationCharacterstic.UUID] descriptor:nil operation:READ_REQUEST];
     }
-    
+
 }
 
 /*!
@@ -169,30 +169,30 @@
 {
     NSData *dataValue = characteristic.value;
     const uint8_t *reportData = (uint8_t *)[dataValue bytes];
-    
+
     if ([characteristic.UUID isEqual:BAROMETER_DIGITAL_SENSOR_CHARACTERISTIC_UUID])
     {
         _sensorTypeString = [NSString stringWithFormat:@"%d",reportData[0]];
-        
+
          [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:dataValue]]];
     }
     else if ([characteristic.UUID isEqual:BAROMETER_SENSOR_SCAN_INTERVAL_CHARACTERISTIC_UUID])
     {
         _sensorScanIntervalString = [NSString stringWithFormat:@"%d",reportData[0]];
-        
+
          [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:dataValue]]];
     }
     else if ([characteristic.UUID isEqual:BAROMETER_DATA_ACCUMULATION_CHARACTERISTIC_UUID])
     {
         _filterTypeConfigurationString = [NSString stringWithFormat:@"%d",reportData[0]];
-        
+
          [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:dataValue]]];
     }
     else if ([characteristic.UUID isEqual:BAROMETER_READING_CHARACTERISTIC_UUID])
     {
         float pressureValue = CFSwapInt16LittleToHost(*(uint16_t *) &reportData[0]);
         _pressureValueString = [NSString stringWithFormat:@"%f",pressureValue];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:dataValue]]];
     }
 

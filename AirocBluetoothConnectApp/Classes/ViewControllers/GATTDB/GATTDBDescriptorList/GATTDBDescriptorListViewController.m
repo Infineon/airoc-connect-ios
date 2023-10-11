@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -98,18 +98,18 @@
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *cellIdentifier = DESCRIPTOR_CELL_IDENTIFIER;
-    
+
     DescriptorListTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
-    
+
     if (cell == nil)
     {
         cell = [[DescriptorListTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
     }
     /*  Update datafields */
     CBDescriptor *descriptor = [descriptorArray objectAtIndex:[indexPath row]];
-    cell.descriptorUUIDLabel.text = [Utilities get128BitUUIDForUUID:descriptor.UUID];
-    cell.descriptionLabel.text = [Utilities getDiscriptorNameForUUID:descriptor.UUID];
-    
+    cell.descriptorUUIDLabel.text = [[descriptor.UUID UUIDString] lowercaseString];
+    cell.descriptionLabel.text = [Utilities getDescriptorNameForUUID:descriptor.UUID];
+
     return cell;
 }
 
@@ -120,9 +120,8 @@
 
 -(void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UIImageView *bgImageView = [[UIImageView alloc] initWithFrame:cell.bounds];
-    bgImageView.image = [UIImage imageNamed:CELL_BG_IMAGE];
-    cell.backgroundView = bgImageView;
+    [cell viewWithTag:42].layer.borderColor = COLOR_PRIMARY.CGColor;
+    [cell viewWithTag:42].layer.borderWidth = 1;
 }
 
 #pragma mark - TableView Delegate Methods
@@ -137,7 +136,7 @@
 {
     selectedDescriptor = [descriptorArray objectAtIndex:indexPath.row];
     [self performSegueWithIdentifier:DESCRIPTOR_DETAILS_SEGUE sender:nil];
-    
+
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 

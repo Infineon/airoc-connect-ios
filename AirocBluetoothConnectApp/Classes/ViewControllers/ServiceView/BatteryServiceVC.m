@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -71,7 +71,7 @@
 -(void) viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self]) {
         [batteryModel stopUpdate];
     }
@@ -86,10 +86,10 @@
 -(void)initBatteryModel
 {
     [self initBatteryUI];
-    
+
     batteryModel = [[BatteryServiceModel alloc] init];
     batteryModel.delegate = self;
-    
+
     __weak __typeof(self) wself = self;
     [batteryModel startDiscoverCharacteristicsWithCompletionHandler:^(BOOL success, NSError *error) {
         __strong __typeof(self) sself = wself;

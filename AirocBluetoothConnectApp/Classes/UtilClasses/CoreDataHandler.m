@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -34,6 +34,8 @@
 #import "CoreDataHandler.h"
 #import "AppDelegate.h"
 #import "Logger.h"
+#import "Constants.h"
+#import "Utilities.h"
 
 #define LOGGER_ENTITY    @"Logger"
 #define DATE             @"date"
@@ -57,7 +59,7 @@
     Logger *entity = [NSEntityDescription insertNewObjectForEntityForName:LOGGER_ENTITY inManagedObjectContext:appDelegate.managedObjectContext];
     entity.date = date;
     entity.event = event;
-    
+
     NSError *error;
     [appDelegate.managedObjectContext save:&error];
 }
@@ -80,10 +82,10 @@
     [fetchRequest setPredicate:predicate];
 
     fetchRequest.returnsObjectsAsFaults = NO;
-    
+
     NSError *error = nil;
     NSArray *fetchedObjects = [appDelegate.managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    
+
     // Returning only the logged events
     NSMutableArray *events = [[NSMutableArray alloc] init];
     if (error == nil && fetchedObjects != nil) {
@@ -103,41 +105,41 @@
 -(void) deleteLogEventsForDate:(NSString *)date {
     AppDelegate *appDelegate= (AppDelegate *)[[UIApplication sharedApplication] delegate];
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    
+
     NSEntityDescription *desc = [NSEntityDescription entityForName:LOGGER_ENTITY inManagedObjectContext:appDelegate.managedObjectContext];
     [fetchRequest setEntity:desc];
-    
+
     // Filtering criteria
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"date = %@", date];
     [fetchRequest setPredicate:predicate];
-    
+
     fetchRequest.returnsObjectsAsFaults = NO;
-    
+
     NSError *error = nil;
     NSArray *fetchedObjects = [appDelegate.managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    
+
     if (error == nil && fetchedObjects != nil) {
         for (NSManagedObject *entity in fetchedObjects) {
             [appDelegate.managedObjectContext deleteObject:entity];
         }
     }
-    
+
     [appDelegate.managedObjectContext save:&error];
 }
 
 /*!
  *  @method getLogDates
  *
- *  @discussion Return log record dates
+ *  @discussion Return log record dates in historical order (oldest date is the first)
  *
  */
 -(NSArray *) getLogDates {
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     NSEntityDescription *desc = [NSEntityDescription entityForName:LOGGER_ENTITY inManagedObjectContext:appDelegate.managedObjectContext];
-
+    
     NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
     fetchRequest.entity = desc;
-    
+
     // All objects in the backing store are implicitly distinct, but two dictionaries can be duplicates.
     // Since you only want distinct names, only ask for the 'name' property.
     fetchRequest.resultType = NSDictionaryResultType;
@@ -148,15 +150,23 @@
 
     NSError *error = nil;
     NSArray *fetchedObjects = [appDelegate.managedObjectContext executeFetchRequest:fetchRequest error:&error];
-    
-    // Returning only the logged events
-    NSMutableArray *dates = [[NSMutableArray alloc] init];
+
+    // Collect log file names from fetch result
+    NSMutableArray *logFileNames = [[NSMutableArray alloc] init];
     if (error == nil && fetchedObjects != nil) {
         for (NSDictionary *dict in fetchedObjects) {
-            [dates addObject:[dict objectForKey:DATE]];
+            [logFileNames addObject:[dict objectForKey:DATE]];
         }
     }
-    return dates;
+    
+    // Sort the items correctly. Default string sort doesn't work for dates.
+    NSArray* result = logFileNames;
+    if(logFileNames.count) {
+        result = [Utilities sortDates:logFileNames withNewestFirst:false];
+    }
+    
+    // The oldest date is the first
+    return result;
 }
 
 @end

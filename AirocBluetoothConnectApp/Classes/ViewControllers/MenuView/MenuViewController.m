@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -39,8 +39,8 @@
 #define TABLE_IMAGEVIEW_LEADING_CONSTRAINT_CONSTANT     55.0
 #define MENU_TABLE_CELL_IDENTIFIER                      @"menuTableCell"
 
-#define menuItems           [NSArray arrayWithObjects:@"Bluetooth® LE Devices",@"Data Logger",@"Infineon",@"About",nil]
-#define menuItemImages      [NSArray arrayWithObjects:@"cypress_BLE_products", @"settings",   @"cypress", @"about",nil]
+#define menuItems           [NSArray arrayWithObjects:@"Bluetooth® LE Devices", @"Data Logger", @"Infineon",          @"About", nil]
+#define menuItemImages      [NSArray arrayWithObjects:@"ble_devices",           @"data_logger",    @"company_resources", @"about", nil]
 
 #define subMenuItems        [NSArray arrayWithObjects:@"Home",@"Products",@"App Website",@"Contact Us",nil]
 #define subMenuItemImages   [NSArray arrayWithObjects:@"home",@"products",              @"mobile",     @"contact",   nil]
@@ -48,14 +48,14 @@
 /*!
  *  @class MenuViewController
  *
- *  @discussion Class to handle the menu related operations 
+ *  @discussion Class to handle the menu related operations
  *
  */
 @interface MenuViewController ()
 {
     NSMutableArray *menuItemsMutableArray;
     NSMutableArray *menuItemImagesMutableArray;
-    
+
     BOOL isSubMenuVisible;
 }
 
@@ -100,19 +100,19 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    
+
     static NSString *menuTableCellIdentifier = MENU_TABLE_CELL_IDENTIFIER;
     MenuTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:menuTableCellIdentifier];
-    
+
     if (cell == nil)
     {
         cell = [[MenuTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:menuTableCellIdentifier];
     }
-    
+
     NSString *ItemName = [menuItemsMutableArray objectAtIndex:[indexPath row]];
     cell.menuItemLabel.text = ItemName ;
     cell.menuItemImageview.image = [UIImage imageNamed:[menuItemImagesMutableArray objectAtIndex:[indexPath row]]];
-    
+
     if (isSubMenuVisible)
     {
         if ([indexPath row] > 2 && [indexPath row] < 7 && cell.menuItemImageViewLeadingConstraint.constant != TABLE_IMAGEVIEW_LEADING_CONSTRAINT_CONSTANT)
@@ -159,7 +159,7 @@
                         [NSIndexPath indexPathForRow:selectedIndex+4 inSection:0],
                         nil
                     ];
-                
+
                 if (isSubMenuVisible)
                 {
                     isSubMenuVisible = NO;
@@ -179,10 +179,10 @@
         case 3:
             if (isSubMenuVisible)
             {
-                // Show CySmart home
-                if (_delegate && [_delegate respondsToSelector:@selector(showCypressHomePage)])
+                // Show Company home page
+                if (_delegate && [_delegate respondsToSelector:@selector(showCompanyHomePage)])
                 {
-                    [_delegate showCypressHomePage];
+                    [_delegate showCompanyHomePage];
                 }
             }
             else
@@ -203,16 +203,16 @@
             break;
         case 5:
             // Show mobile
-            if (_delegate && [_delegate respondsToSelector:@selector(showCypressMobilePage)])
+            if (_delegate && [_delegate respondsToSelector:@selector(showAppMobilePage)])
             {
-                [_delegate showCypressMobilePage];
+                [_delegate showAppMobilePage];
             }
             break;
         case 6:
             // show the Cypress contact WebPage
-            if (_delegate && [_delegate respondsToSelector:@selector(showCypressContactWebPage)])
+            if (_delegate && [_delegate respondsToSelector:@selector(showCompanyContactWebPage)])
             {
-                [_delegate showCypressContactWebPage];
+                [_delegate showCompanyContactWebPage];
             }
             break;
         case 7:

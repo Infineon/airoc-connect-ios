@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -48,7 +48,7 @@
 {
     void(^cbCharacteristicDiscoverHandler)(BOOL success, NSError *error);
     void(^cbCharacteristicHandler)(BOOL success, NSError *error);
-    
+
     NSArray *deviceInfoCharArray;
     int charCount;
 }
@@ -63,7 +63,7 @@
 {
     self = [super init];
     if (self) {
-        
+
         if (!_deviceInfoCharValueDictionary)
         {
             _deviceInfoCharValueDictionary = [NSMutableDictionary dictionary];
@@ -82,7 +82,7 @@
 -(void)startDiscoverChar:(void (^) (BOOL success, NSError *error))handler
 {
     cbCharacteristicDiscoverHandler = handler;
-    
+
     [[CyCBManager sharedManager] setCbCharacteristicDelegate:self];
     [[[CyCBManager sharedManager] myPeripheral] discoverCharacteristics:nil forService:[[CyCBManager sharedManager] myService]];
 }
@@ -96,7 +96,7 @@
 -(void) discoverCharacteristicValues:(void(^)(BOOL success, NSError *error))handler
 {
     cbCharacteristicHandler = handler;
-    
+
     for (CBCharacteristic *aChar in deviceInfoCharArray)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:DEVICE_INFO_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:aChar.UUID] descriptor:nil operation:READ_REQUEST];
@@ -138,13 +138,13 @@
 -(void) peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
     NSData *charData = characteristic.value;
-    
+
     /* Read the name of the manufacturer of the device from characteristic
      */
     if ([characteristic.UUID isEqual:DEVICE_MANUFACTURER_NAME_CHARACTERISTIC_UUID])
     {
          NSString *manufactureName = [[NSString alloc] initWithData:charData encoding:NSUTF8StringEncoding];
-        
+
         if (manufactureName != nil)
         {
             [_deviceInfoCharValueDictionary setObject:manufactureName forKey:MANUFACTURER_NAME];
@@ -155,7 +155,7 @@
     else if ([characteristic.UUID isEqual:DEVICE_MODEL_NUMBER_CHARACTERISTIC_UUID])
     {
         NSString *modelNumberString = [[NSString alloc] initWithData:charData encoding:NSUTF8StringEncoding];
-        
+
         if (modelNumberString != nil)
         {
             [_deviceInfoCharValueDictionary setObject:modelNumberString forKey:MODEL_NUMBER];
@@ -166,7 +166,7 @@
     else if ([characteristic.UUID isEqual:DEVICE_SERIAL_NUMBER_CHARACTERISTIC_UUID])
     {
         NSString *serialNumberString = [[NSString alloc] initWithData:charData encoding:NSUTF8StringEncoding];
-        
+
         if (serialNumberString != nil)
         {
             [_deviceInfoCharValueDictionary setObject:serialNumberString forKey:SERIAL_NUMBER];
@@ -177,7 +177,7 @@
     else if ([characteristic.UUID isEqual:DEVICE_HARDWARE_REVISION_CHARACTERISTIC_UUID])
     {
         NSString *hardwareRevisionString = [[NSString alloc] initWithData:charData encoding:NSUTF8StringEncoding];
-        
+
         if (hardwareRevisionString != nil)
         {
             [_deviceInfoCharValueDictionary setObject:hardwareRevisionString forKey:HARDWARE_REVISION];
@@ -186,7 +186,7 @@
     else if ([characteristic.UUID isEqual:DEVICE_FIRMWARE_REVISION_CHARACTERISTIC_UUID])
     {
         NSString *firmwareRevisionString = [[NSString alloc] initWithData:charData encoding:NSUTF8StringEncoding];
-        
+
         if (firmwareRevisionString != nil)
         {
             [_deviceInfoCharValueDictionary setObject:firmwareRevisionString forKey:FIRMWARE_REVISION];
@@ -196,9 +196,9 @@
      */
     else if ([characteristic.UUID isEqual:DEVICE_SOFTWARE_REVISION_CHARACTERISTIC_UUID])
     {
-        
+
         NSString *softwareRevisionString = [[NSString alloc] initWithData:charData encoding:NSUTF8StringEncoding];
-        
+
         if (softwareRevisionString != nil)
         {
             [_deviceInfoCharValueDictionary setObject:softwareRevisionString forKey:SOFTWARE_REVISION];
@@ -209,7 +209,7 @@
     else if ([characteristic.UUID isEqual:DEVICE_SYSTEMID_CHARACTERISTIC_UUID])
     {
         NSString *systemID = [NSString stringWithFormat:@"%@", [characteristic.value hexString]];
-        
+
         if (systemID != nil)
         {
             [_deviceInfoCharValueDictionary setObject:systemID forKey:SYSTEM_ID];
@@ -221,7 +221,7 @@
     else if ([characteristic.UUID isEqual:DEVICE_CERTIFICATION_DATALIST_CHARACTERISTIC_UUID])
     {
         NSString *certificationDataList = [NSString stringWithFormat:@"%@", [charData hexString]];
-        
+
         if (certificationDataList != nil)
         {
             [_deviceInfoCharValueDictionary setObject:certificationDataList forKey:REGULATORY_CERTIFICATION_DATA_LIST];
@@ -232,24 +232,24 @@
     else if ([characteristic.UUID isEqual:DEVICE_PNPID_CHARACTERISTIC_UUID])
     {
         NSString *pnpID = [NSString stringWithFormat:@"%@", [characteristic.value hexString]];
-        
+
         if (pnpID != nil)
         {
             [_deviceInfoCharValueDictionary setObject:pnpID forKey:PNP_ID];
         }
     }
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:DEVICE_INFO_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@", READ_RESPONSE,DATA_SEPERATOR, [Utilities convertDataToLoggerFormat:charData]]];
-    
+
     charCount ++;
-    
+
     if (charCount == deviceInfoCharArray.count)
     {
         if(cbCharacteristicHandler){
             cbCharacteristicHandler(YES,nil);
         }
     }
-    
+
 }
 
 

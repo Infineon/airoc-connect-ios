@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -52,82 +52,82 @@
 {
     IBOutlet UIScrollView * scrollView;
     CGFloat scrollViewContentSizeHeight;
-    
+
     NSArray * filterConfigOptionsArray;
-    
+
     BOOL isAccellerometerFilterConfigClicked, isPressureFilterConfigClicked;
     IBOutlet UIButton * accellerometerFilterConfigBtn;
     IBOutlet UIButton * pressureFilterConfigBtn;
-    
+
     //UILabel Outlets for displaying reading values
     IBOutlet UILabel * accellermeterReadingXValueLbl;
     IBOutlet UILabel * accellermeterReadingYValueLbl;
     IBOutlet UILabel * accellermeterReadingZValueLbl;
     IBOutlet UITextField * accelerometerSensorScanIntervalTxtFld;
     IBOutlet UILabel * accelerometerSensorTypeValueLbl;
-    
+
     IBOutlet UILabel * temperatureReadingValueLbl;
     IBOutlet UITextField * temperatureSensorScanIntervalTxtFld;
     IBOutlet UILabel * temperatureSensorTypeValueLbl;
-    
+
     IBOutlet UILabel * batteryReadingValueLbl;
-    
+
     IBOutlet UILabel * pressureReadingValueLbl;
     IBOutlet UITextField * pressureSensorScanIntervalTxtFld;
     IBOutlet UILabel * pressureSensorTypeValueLbl;
     IBOutlet UITextField * pressureThresholdTxtFld;
-    
+
     //Outlets of Graph displaying UIViews
     IBOutlet UIView * accellerometerGraphView;
     IBOutlet UIView * temperatureGraphView;
     IBOutlet UIView * pressureGraphView;
-    
+
     /* Variables, Constraints and Constants to control the View expanding and collapsing */
-    
+
 #define GRAPH_VIEW_HEIGHT                       250.0f
 #define ACCELLEROMETER_PROPERTIES_VIEW_HEIGHT   140.0f
 #define TEMPERATURE_PROPERTIES_VIEW_HEIGHT      100.0f
 #define PRESSURE_PROPERTIES_VIEW_HEIGHT         180.0f
 #define INITIAL_CONTENT_SIZE_HEIGHT             935.0f
-    
+
 #define ACCELLEROMETER_VIEW_HEIGHT              280.0f
 #define TEMPERATURE_VIEW_HEIGHT                 170.0f
 #define PRESSURE_VIEW_HEIGHT                    280.0f
-    
+
     IBOutlet NSLayoutConstraint * graphViewOfAccelerometer_HeightConstraint;
     IBOutlet NSLayoutConstraint * graphViewOfTemperature_HeightConstraint;
     IBOutlet NSLayoutConstraint * graphViewOfPressure_HeightConstraint;
-    
+
     IBOutlet NSLayoutConstraint * propertiesViewOfAccelerometer_HeightConstraint;
     IBOutlet NSLayoutConstraint * propertiesViewOfTemperature_HeightConstraint;
     IBOutlet NSLayoutConstraint * propertiesViewOfPressure_HeightConstraint;
-    
+
     IBOutlet NSLayoutConstraint * accellerometerViewHeightConstraint;
     IBOutlet NSLayoutConstraint * temperatureViewHeightConstraint;
     IBOutlet NSLayoutConstraint * pressureViewHeightConstraint;
-    
+
     IBOutlet NSLayoutConstraint * parentViewHeightConstraint;
-    
+
     IBOutlet NSLayoutConstraint * scrollViewBottomConstraint;
-    
+
     AccelerometerModel *mAccelerometerModel;
     TemperatureModel *mTemperatureModel;
     BatteryServiceModel *mBatteryModel;
     SensorHubModel *mSensorHubModel;
     FindMeModel *mfindMeModel;
-    
+
     BOOL isAccelerometerCharacteristicsdiscovered, isTemperatureCharacteristicsdiscovered, isBarometerCharacteristicsdiscovered;
-    
+
     MyLineChart *pressureChart, *temperatureChart, *accelerometerGraph;
     BOOL isPressureChartVisible, isTemperatureChartVisible, isAccelerometerGraphVisible;
-    
+
     NSMutableArray *pressureDataArray, *pressureTimeDataArray;
     NSMutableArray *temperatureDataArray, *temperatureTimeDataArray;
     NSMutableArray *accelerometerDataArray, *accelerometerTimeDataArray;
-    
+
     //Variables to control Text Field auto positioning when keyboard appears
     CGRect firstResponderRect, keyBoardRect;
-    
+
     NSDate *startTime;
 }
 @end
@@ -145,22 +145,22 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+
     //Predefined array that stores Filter Configuration Options
     filterConfigOptionsArray = [NSArray arrayWithObjects:AVERAGE,MEDIUM,CUSTOM,NONE, nil];
-    
+
     [self initSensorHubmodel];
     [self initBatteryModel];
-    
+
     pressureDataArray = [NSMutableArray array];
     pressureTimeDataArray = [NSMutableArray array];
-    
+
     temperatureDataArray = [NSMutableArray array];
     temperatureTimeDataArray = [NSMutableArray array];
-    
+
     accelerometerDataArray = [NSMutableArray array];
     accelerometerTimeDataArray = [NSMutableArray array];
-    
+
     startTime = [NSDate date];
     //Method for adding Done button as accessory view to the keyboard's top for each text fields
     [self addDoneButton];
@@ -168,27 +168,27 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
+
     //Setting Initial size of the Scroll View and Main Parent View
     [scrollView setContentSize:CGSizeMake(self.view.frame.size.width, INITIAL_CONTENT_SIZE_HEIGHT)];
     parentViewHeightConstraint.constant = INITIAL_CONTENT_SIZE_HEIGHT;
     scrollViewContentSizeHeight = INITIAL_CONTENT_SIZE_HEIGHT;
-    
+
     //Setting Height of all Graph displaying views to Zero.
     graphViewOfAccelerometer_HeightConstraint.constant = 0;
     graphViewOfPressure_HeightConstraint.constant = 0;
     graphViewOfTemperature_HeightConstraint.constant = 0;
-    
+
     //Setting Height of all Properties displaying views to Zero.
     propertiesViewOfAccelerometer_HeightConstraint.constant = 0;
     propertiesViewOfPressure_HeightConstraint.constant = 0;
     propertiesViewOfTemperature_HeightConstraint.constant = 0;
-    
+
     //Setting the heights of all views specific to profiles
     accellerometerViewHeightConstraint.constant = ACCELLEROMETER_VIEW_HEIGHT;
     temperatureViewHeightConstraint.constant = TEMPERATURE_VIEW_HEIGHT;
     pressureViewHeightConstraint.constant = PRESSURE_VIEW_HEIGHT;
-    
+
     [[super navBarTitleLabel] setText:SENSOR_HUB];
 }
 
@@ -201,7 +201,7 @@
 -(void) viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self]) {
         [mBatteryModel  stopUpdate];
         [mSensorHubModel stopUpdate];
@@ -220,7 +220,7 @@
     if (!mSensorHubModel) {
         mSensorHubModel = [[SensorHubModel alloc] init];
     }
-    
+
     __weak typeof(self) wself = self;
     [mSensorHubModel startDiscoverAccelerometerCharacteristicsWithHandler:^(BOOL success, NSError *error) {
         __strong typeof(self) sself = wself;
@@ -244,7 +244,7 @@
             }
         }
     }];
-    
+
     [mSensorHubModel startDiscoverBarometerCharacteristicsWithHandler:^(BOOL success, NSError *error) {
         __strong typeof(self) sself = wself;
         if (sself) {
@@ -265,7 +265,7 @@
             }
         }
     }];
-    
+
     [mSensorHubModel startDiscoverTemperatureCharacteristicsWithHandler:^(BOOL success, NSError *error) {
         __strong typeof(self) sself = wself;
         if (sself) {
@@ -348,7 +348,7 @@
     } else {
         accelerometerGraph.chartView.setXmin = NO;
     }
-    
+
     if (accelerometerDataArray.count > MAX_GRAPH_POINTS) {
         accelerometerDataArray = [[accelerometerDataArray subarrayWithRange:NSMakeRange(accelerometerDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
     }
@@ -408,14 +408,14 @@
  *
  */
 -(void) checkTemeperatureGraphPointsCount{
-    
+
     if (temperatureTimeDataArray.count > MAX_GRAPH_POINTS) {
         temperatureTimeDataArray = [[temperatureTimeDataArray subarrayWithRange:NSMakeRange(temperatureTimeDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
         temperatureChart.chartView.setXmin = YES;
     } else {
         temperatureChart.chartView.setXmin = NO;
     }
-    
+
     if (temperatureDataArray.count > MAX_GRAPH_POINTS) {
         temperatureDataArray = [[temperatureDataArray subarrayWithRange:NSMakeRange(temperatureDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
     }
@@ -440,10 +440,10 @@
     if (!mBatteryModel) {
         mBatteryModel = [[BatteryServiceModel alloc] init];
     }
-    
+
     mBatteryModel.delegate = self;
     mSensorHubModel.batteryModel = mBatteryModel;
-    
+
     __weak __typeof(self) wself = self;
     [mSensorHubModel startDiscoverBatteryCharacteristicsWithHandler:^(BOOL success, NSError *error) {
         __strong __typeof(self) sself = wself;
@@ -464,7 +464,7 @@
 -(void)updateBatteryUI
 {
     @synchronized(mBatteryModel) {
-        
+
         for(NSString *key in [mBatteryModel.batteryServiceDict allKeys]) {
             NSString *batteryLevelVal = [mBatteryModel.batteryServiceDict valueForKey:key];// Getting current battery level
             batteryReadingValueLbl.text = batteryLevelVal;
@@ -527,14 +527,14 @@
  *
  */
 -(void) checkPressureGraphPointsCount{
-    
+
     if (pressureTimeDataArray.count > MAX_GRAPH_POINTS) {
         pressureTimeDataArray = [[pressureTimeDataArray subarrayWithRange:NSMakeRange(pressureTimeDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
         pressureChart.chartView.setXmin = YES;
     } else {
         pressureChart.chartView.setXmin = NO;
     }
-    
+
     if (pressureDataArray.count > MAX_GRAPH_POINTS) {
         pressureDataArray = [[pressureDataArray subarrayWithRange:NSMakeRange(pressureDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
     }
@@ -585,29 +585,29 @@
         graphViewOfAccelerometer_HeightConstraint.constant = 0;
         accellerometerViewHeightConstraint.constant -= GRAPH_VIEW_HEIGHT;
     }
-    
+
     parentViewHeightConstraint.constant = scrollViewContentSizeHeight;
     [scrollView setContentSize:CGSizeMake(self.view.frame.size.width, scrollViewContentSizeHeight)];
-    
+
     [UIView animateWithDuration:1.0 animations:^{
         [self.view layoutIfNeeded];
     }];
-    
+
     // Add accelerometer Graph
     if (!sender.selected) {
         sender.selected = YES;
         isAccelerometerGraphVisible = YES ;
-        
+
         if (!accelerometerGraph) {
             accelerometerGraph =[[MyLineChart alloc] initWithFrame:CGRectMake(0, 0, accellerometerGraphView.frame.size.width, accellerometerGraphView.frame.size.height)];
             accelerometerGraph.graphTitleLabel.text = ACCELEROMETER;
             [accelerometerGraph addXLabel:TIME yLabel:ACCELEROMETER];
-            
+
             accelerometerGraph.pauseButton.frame = CGRectMake(accelerometerGraph.pauseButton.frame.origin.x, accelerometerGraph.pauseButton.frame.origin.y, accelerometerGraph.frame.size.width, accelerometerGraph.pauseButton.frame.size.height) ;
-            
+
             accelerometerGraph.shareButton.frame = CGRectMake(0, 0, 0, 0);
         }
-        
+
         if ([accelerometerTimeDataArray count]) {
             [self checkAccelerometerGraphPointsCount];
             [accelerometerGraph updateLineGraph:accelerometerTimeDataArray Y:accelerometerDataArray ];
@@ -636,29 +636,29 @@
         graphViewOfTemperature_HeightConstraint.constant = 0;
         temperatureViewHeightConstraint.constant -= GRAPH_VIEW_HEIGHT;
     }
-    
+
     parentViewHeightConstraint.constant = scrollViewContentSizeHeight;
     [scrollView setContentSize:CGSizeMake(self.view.frame.size.width, scrollViewContentSizeHeight)];
-    
+
     [UIView animateWithDuration:1.0 animations:^{
         [self.view layoutIfNeeded];
     }];
-    
+
     // Add temperature Graph
     if (!sender.selected) {
         isTemperatureChartVisible = YES ;
         sender.selected = YES;
-        
+
         if (!temperatureChart) {
             temperatureChart =[[MyLineChart alloc] initWithFrame:CGRectMake(0, 0, temperatureGraphView.frame.size.width, temperatureGraphView.frame.size.height)];
             temperatureChart.graphTitleLabel.text = TEMPERATURE;
             [temperatureChart addXLabel:TIME yLabel:TEMPERATURE];
-            
+
             temperatureChart.pauseButton.frame = CGRectMake(temperatureChart.pauseButton.frame.origin.x, temperatureChart.pauseButton.frame.origin.y, temperatureChart.frame.size.width, temperatureChart.pauseButton.frame.size.height) ;
-            
+
             temperatureChart.shareButton.frame = CGRectMake(0, 0, 0, 0);
         }
-        
+
         if ([temperatureTimeDataArray count]) {
             [self checkTemeperatureGraphPointsCount];
             [temperatureChart updateLineGraph:temperatureTimeDataArray Y:temperatureDataArray];
@@ -687,14 +687,14 @@
         graphViewOfPressure_HeightConstraint.constant = 0;
         pressureViewHeightConstraint.constant -= GRAPH_VIEW_HEIGHT;
     }
-    
+
     parentViewHeightConstraint.constant = scrollViewContentSizeHeight;
     [scrollView setContentSize:CGSizeMake(self.view.frame.size.width, scrollViewContentSizeHeight)];
-    
+
     [UIView animateWithDuration:1.0 animations:^{
         [self.view layoutIfNeeded];
     }];
-    
+
     // Add Pressure Graph
     if (!sender.selected) {
         isPressureChartVisible = YES ;
@@ -703,9 +703,9 @@
             pressureChart =[[MyLineChart alloc] initWithFrame:CGRectMake(0, 0, pressureGraphView.frame.size.width, pressureGraphView.frame.size.height)];
             pressureChart.graphTitleLabel.text = PRESSURE;
             [pressureChart addXLabel:TIME yLabel:PRESSURE_YLABEL];
-            
+
             pressureChart.pauseButton.frame = CGRectMake(pressureChart.pauseButton.frame.origin.x, pressureChart.pauseButton.frame.origin.y, pressureChart.frame.size.width, pressureChart.pauseButton.frame.size.height) ;
-            
+
             pressureChart.shareButton.frame = CGRectMake(0, 0, 0, 0);
         }
         if ([pressureTimeDataArray count]) {
@@ -738,17 +738,17 @@
         propertiesViewOfAccelerometer_HeightConstraint.constant =  0;
         accellerometerViewHeightConstraint.constant -= ACCELLEROMETER_PROPERTIES_VIEW_HEIGHT;
     }
-    
+
     parentViewHeightConstraint.constant = scrollViewContentSizeHeight;
     [scrollView setContentSize:CGSizeMake(self.view.frame.size.width, scrollViewContentSizeHeight)];
-    
+
     [UIView animateWithDuration:1.0 animations:^{
         [self.view layoutIfNeeded];
     }];
     [sender setSelected: sender.selected ? NO : YES];
-    
+
     // Adding values to data fields
-    
+
     [self readAccelerometerCharacteristics];
 }
 
@@ -764,21 +764,21 @@
         scrollViewContentSizeHeight += TEMPERATURE_PROPERTIES_VIEW_HEIGHT;
         propertiesViewOfTemperature_HeightConstraint.constant = TEMPERATURE_PROPERTIES_VIEW_HEIGHT;
         temperatureViewHeightConstraint.constant += TEMPERATURE_PROPERTIES_VIEW_HEIGHT;
-        
+
     } else {
         scrollViewContentSizeHeight -= TEMPERATURE_PROPERTIES_VIEW_HEIGHT;
         propertiesViewOfTemperature_HeightConstraint.constant =  0;
         temperatureViewHeightConstraint.constant -= TEMPERATURE_PROPERTIES_VIEW_HEIGHT;
     }
-    
+
     parentViewHeightConstraint.constant = scrollViewContentSizeHeight;
     [scrollView setContentSize:CGSizeMake(self.view.frame.size.width, scrollViewContentSizeHeight)];
-    
+
     [UIView animateWithDuration:1.0 animations:^{
         [self.view layoutIfNeeded];
     }];
     [sender setSelected: sender.selected ? NO : YES];
-    
+
     [self readTemperatureCharacteristics];
 }
 
@@ -799,15 +799,15 @@
         propertiesViewOfPressure_HeightConstraint.constant =  0;
         pressureViewHeightConstraint.constant -= PRESSURE_PROPERTIES_VIEW_HEIGHT;
     }
-    
+
     parentViewHeightConstraint.constant = scrollViewContentSizeHeight;
     [scrollView setContentSize:CGSizeMake(self.view.frame.size.width, scrollViewContentSizeHeight)];
-    
+
     [UIView animateWithDuration:1.0 animations:^{
         [self.view layoutIfNeeded];
     }];
     [sender setSelected: sender.selected ? NO : YES];
-    
+
     [self readBarometerCharacteristics];
 }
 
@@ -883,7 +883,7 @@
     NSDictionary *info = [notification userInfo];
     NSValue *kbFrame = [info objectForKey:UIKeyboardFrameEndUserInfoKey];
     keyBoardRect = [kbFrame CGRectValue];
-    
+
     if (scrollViewBottomConstraint.constant == 0) {
         scrollViewBottomConstraint.constant = keyBoardRect.size.height;
         [UIView animateWithDuration:1 animations:^{

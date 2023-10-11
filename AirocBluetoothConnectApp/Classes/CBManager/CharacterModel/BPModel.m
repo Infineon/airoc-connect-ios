@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -46,7 +46,7 @@
 {
     void(^cbCharacteristicHandler)(BOOL success, NSError *error);
     void(^cbcharacteristicDiscoverHandler)(BOOL success, NSError *error);
-    
+
     CBCharacteristic *bpCharacteristic;
 }
 
@@ -63,7 +63,7 @@
 -(void)startDiscoverChar:(void (^) (BOOL success, NSError *error))handler
 {
     cbcharacteristicDiscoverHandler = handler;
-    
+
     [[CyCBManager sharedManager] setCbCharacteristicDelegate:self];
     [[[CyCBManager sharedManager] myPeripheral] discoverCharacteristics:nil forService:[[CyCBManager sharedManager] myService]];
 }
@@ -76,11 +76,11 @@
 -(void)updateCharacteristicWithHandler:(void (^) (BOOL success, NSError *error))handler
 {
     cbCharacteristicHandler = handler;
-    
+
     if (bpCharacteristic)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:BP_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:BP_MEASUREMENT_CHARACTERISTIC_UUID] descriptor:nil operation:START_NOTIFY];
-        
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:bpCharacteristic];
     }
 }
@@ -94,13 +94,13 @@
 -(void)stopUpdate
 {
     cbCharacteristicHandler = nil;
-    
+
     if (bpCharacteristic)
     {
         if (bpCharacteristic.isNotifying)
         {
             [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:NO forCharacteristic:bpCharacteristic];
-            
+
             [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:BP_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:BP_MEASUREMENT_CHARACTERISTIC_UUID] descriptor:nil operation:STOP_NOTIFY];
         }
     }
@@ -169,31 +169,31 @@
 {
     NSData *data = [characteristic value];
     const uint8_t *reportData = (uint8_t *)[data bytes];
-    
+
     // Checking the flag
-    
+
     if (!(reportData[0] & 0x00))
     {
         // BP details in units of mmHg
         _bloodPressureUnitString = BLOOD_PRESSURE_UNIT_mmHg;
-        
+
     }
     else
     {
         //BP details in units of kPa
         _bloodPressureUnitString = BLOOD_PRESSURE_UNIT_kPa;
     }
-    
+
      int16_t systolicData = (int16_t) CFSwapInt16LittleToHost(*(int16_t *) &reportData[1]);
     _systolicPressureValue = [Utilities convertSFLOATFromData:systolicData];
-    
+
     int16_t diastolicData = (int16_t) CFSwapInt16LittleToHost(*(int16_t *) &reportData[3]);
     _diastolicPressureValue = [Utilities convertSFLOATFromData:diastolicData];
-    
+
     if (cbCharacteristicHandler != nil) {
         cbCharacteristicHandler(YES,nil);
     }
-    
+
      [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
 }
 

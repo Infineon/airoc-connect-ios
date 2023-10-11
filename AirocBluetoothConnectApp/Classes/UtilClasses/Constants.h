@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -31,8 +31,8 @@
  * so agrees to indemnify Cypress against all liability.
  */
 
-#ifndef CySmart_Constants_h
-#define CySmart_Constants_h
+#ifndef Constants_h
+#define Constants_h
 
 
 #endif
@@ -56,7 +56,23 @@ enum alertOptions
 //Constant for enabling disabling Glucose Service : To disable change YES to NO and vice versa
 #define ENABLE_GLUCOSE   [NSNumber numberWithBool:YES]
 
-#define BLUE_COLOR [UIColor colorWithRed:12.0f/255.0f green:55.0f/255.0f blue:123.0f/255.0f alpha:1.0f]
+#pragma mark - UI Colors
+
+#define UIColorFromRGB(rgbValue) \
+[UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 \
+                green:((float)((rgbValue & 0x00FF00) >>  8))/255.0 \
+                 blue:((float)((rgbValue & 0x0000FF) >>  0))/255.0 \
+                alpha:1.0]
+
+#define COLOR_PRIMARY UIColorFromRGB(0x5EA290)
+#define COLOR_ACCENT  UIColorFromRGB(0xAB377A)
+#define COLOR_DARK    UIColorFromRGB(0x263238)
+
+#pragma mark - UI Font sizes
+#define FONT_SIZE_LARGE  22
+#define FONT_SIZE_MEDIUM 18
+#define FONT_SIZE_SMALL  14
+
 
 #define BLE_PRODUCTS_URL        @"https://www.infineon.com/cms/en/product/wireless-connectivity/airoc-bluetooth-le-bluetooth-multiprotocol/"
 #define CONTACT_URL             @"https://www.infineon.com/cms/en/about-infineon/company/contacts/"
@@ -81,8 +97,6 @@ enum alertOptions
 
 #define RSC_SERVICE_UUID            [CBUUID UUIDWithString:@"1814"]
 #define RSC_CHARACTERISTIC_UUID     [CBUUID UUIDWithString:@"2A53"]
-
-
 #define POLARH7_HRM_DEVICE_INFO_SERVICE_UUID @"180A"       // 180A = Device Information
 
 
@@ -97,11 +111,10 @@ enum alertOptions
 #define BP_MEASUREMENT_CHARACTERISTIC_UUID    [CBUUID UUIDWithString:@"2A35"]
 
 
-#define GLUCOSE_SERVICE_UUID                        [CBUUID UUIDWithString:@"1808"]
-#define GLUCOSE_MEASUREMENT_CHARACTERISTIC_UUID     [CBUUID UUIDWithString:@"2A18"]
-#define GLUCOSE_RECORD_ACCESS_CONTROL_POINT_UUID    [CBUUID UUIDWithString:@"2A52"]
-#define GLUCOSE_MEASUREMENT_CONTEXT_UUID            [CBUUID UUIDWithString:@"2A34"]
-
+#define GLUCOSE_SERVICE_UUID                                  [CBUUID UUIDWithString:@"1808"]
+#define GLUCOSE_MEASUREMENT_CHARACTERISTIC_UUID               [CBUUID UUIDWithString:@"2A18"]
+#define GLUCOSE_RECORD_ACCESS_CONTROL_POINT_UUID              [CBUUID UUIDWithString:@"2A52"]
+#define GLUCOSE_MEASUREMENT_CONTEXT_UUID                      [CBUUID UUIDWithString:@"2A34"]
 
 #define THM_SERVICE_UUID                                      [CBUUID UUIDWithString:@"1809"]
 #define THM_TEMPERATURE_MEASUREMENT_CHARACTERISTIC_UUID       [CBUUID UUIDWithString:@"2A1C"]
@@ -118,9 +131,8 @@ enum alertOptions
 #define DEVICE_CERTIFICATION_DATALIST_CHARACTERISTIC_UUID     [CBUUID UUIDWithString:@"2A2A"]
 #define DEVICE_PNPID_CHARACTERISTIC_UUID                      [CBUUID UUIDWithString:@"2A50"]
 
-
-#define BATTERY_LEVEL_SERVICE_UUID         [CBUUID UUIDWithString:@"180F"]
-#define BATTERY_LEVEL_CHARACTERISTIC_UUID  [CBUUID UUIDWithString:@"2A19"]  
+#define BATTERY_LEVEL_SERVICE_UUID                            [CBUUID UUIDWithString:@"180F"]
+#define BATTERY_LEVEL_CHARACTERISTIC_UUID                     [CBUUID UUIDWithString:@"2A19"]
 
 
 #define CAPSENSE_SERVICE_UUID                        [CBUUID UUIDWithString:@"CAB5"]
@@ -493,7 +505,7 @@ enum alertOptions
 /* Date formats */
 
 #define DATE_FORMAT     @"dd-MMM-yyyy"
-#define TIME_FORMAT     @"HH:mm:ss"
+#define TIME_FORMAT     @"HH:mm:ss.SSS"
 
 /* Device Detection Macros */
 #pragma mark - Device detection macros
@@ -561,11 +573,6 @@ enum alertOptions
 
 #define INDICATE_AND_NOTIFY_DISABLED    @"Both indications and notifications disabled"
 
-/* GATT DB*/
-
-#define CELL_BG_IMAGE           @"list_bg"
-#define CELL_BG_IMAGE_SMALL     @"list_bg_small"
-
 /* Graph labels */
 
 #define ACCELEROMETER                   @"Accelerometer"
@@ -574,16 +581,16 @@ enum alertOptions
 #define PRESSURE                        @"Pressure"
 #define PRESSURE_YLABEL                 @"Pressure (kPa)"
 
-#define CYCLING_GRAPH_HEADER            @"Cadence Vs Time"
+#define CYCLING_GRAPH_HEADER            @"Cadence vs Time"
 #define CYCLING_GRAPH_YLABEL            @"Cadence (rpm)"
 
-#define TEMPERATURE_GRAPH_HEADER        @"Temperature Vs Time"
+#define TEMPERATURE_GRAPH_HEADER        @"Temperature vs Time"
 #define TEMPERATURE_YLABEL              @"Temperature(°C)"
 
-#define HEART_RATE_GRAPH_HEADER         @"Heart Rate Vs Time"
+#define HEART_RATE_GRAPH_HEADER         @"Heart Rate vs Time"
 #define HEART_RATE_YLABEL               @"Heart Rate (bpm)"
 
-#define RSC_GRAPH_HEADER                @"Instantaneous Speed Vs Time"
+#define RSC_GRAPH_HEADER                @"Instantaneous Speed vs Time"
 #define RSC_GRAPH_YLABEL                @"Instantaneous Speed (km/h)"
 
 
@@ -622,8 +629,8 @@ enum alertOptions
 #define DATA_LOGGER                 @"Data Logger"
 #define BATTERY_INFORMATION         @"Battery Service"
 #define BP                          @"Blood Pressure"
-#define CAPSENSE                    @"CapSense"
-#define CAPSENSE_SELECTION          @"CapSense Selection"
+#define CAPSENSE                    @"CAPSENSE™"
+#define CAPSENSE_SELECTION          @"CAPSENSE™ Selection"
 #define CSC                         @"Cycling Speed and Cadence"
 #define DEVICE_INFO                 @"Device Information"
 #define FIND_ME                     @"Find Me"

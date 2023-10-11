@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -104,13 +104,13 @@
 -(void)stopUpdate
 {
     cbCharacteristicHandler = nil;
-    
+
     if ([[[CyCBManager sharedManager] myService].UUID isEqual:THM_SERVICE_UUID])
     {
         for (CBCharacteristic *aChar in [[CyCBManager sharedManager] myService].characteristics)
         {
             if ([aChar.UUID isEqual:THM_TEMPERATURE_MEASUREMENT_CHARACTERISTIC_UUID]){
-                
+
                 if (aChar.isNotifying)
                 {
                     [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:NO  forCharacteristic:aChar];
@@ -139,15 +139,15 @@
             if ([aChar.UUID isEqual:THM_TEMPERATURE_MEASUREMENT_CHARACTERISTIC_UUID])
             {
                 [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:aChar];
-                
+
                 [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:THM_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:THM_TEMPERATURE_MEASUREMENT_CHARACTERISTIC_UUID] descriptor:nil operation:START_INDICATE];
-                
+
                 cbCharacteristicDiscoverHandler(YES,nil);
             }
             else if([aChar.UUID isEqual:THM_TEMPERATURE_TYPE_CHARACTERISTIC_UUID])
             {
                 [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:aChar];
-                
+
                 [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:THM_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:THM_TEMPERATURE_TYPE_CHARACTERISTIC_UUID] descriptor:nil operation:READ_REQUEST];
             }
         }
@@ -199,33 +199,33 @@
 
 -(void)getTHMtemp:(CBCharacteristic *)characteristic
 {
-  
+
     // Convert the contents of the characteristic value to a data-object //
     NSData *data = [characteristic value];
-    
+
     // Get the byte sequence of the data-object //
     const uint8_t *reportData = [data bytes];
-    
+
     // Initialise the offset variable //
     NSUInteger offset = 1;
     // Initialise the bpm variable //
-   
+
     if ((reportData[0] & 0x01) == 0) {
-        
+
         [self calculateTemperaturefromCharacteristic:characteristic];
 
         offset = offset + 4; // Plus 4 byte //
         self.mesurementType = TEMPERATURE_UNIT_IN_CELCIUS;
     }
     else {
-        
+
         [self calculateTemperaturefromCharacteristic:characteristic];
 
         offset =  offset + 4; // Plus 4 bytes //
         self.mesurementType = TEMPERATURE_UNIT_IN_FAHRENHEIT;
     }
-    
-    
+
+
     /* timestamp */
     if( (reportData[0] & 0x02) )
     {
@@ -235,26 +235,26 @@
         uint8_t hour = *(uint8_t*) &reportData[offset]; offset++;
         uint8_t min = *(uint8_t*) &reportData[offset]; offset++;
         uint8_t sec = *(uint8_t*) &reportData[offset]; offset++;
-        
+
         NSString * dateString = [NSString stringWithFormat:@"%d %d %d %d %d %d", year, month, day, hour, min, sec];
-        
+
         NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
         [dateFormat setDateFormat: @"yyyy MM dd HH mm ss"];
         NSDate* date = [dateFormat dateFromString:dateString];
-        
+
         [dateFormat setDateFormat:@"EEE MMM dd, yyyy"];
         NSString* dateFormattedString = [dateFormat stringFromDate:date];
-        
+
         [dateFormat setDateFormat:@"h:mm a"];
         NSString* timeFormattedString = [dateFormat stringFromDate:date];
-        
-        
+
+
         if( dateFormattedString && timeFormattedString )
         {
             self.timeStampString = [NSString stringWithFormat:@"%@ at %@", dateFormattedString, timeFormattedString];
         }
     }
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
 }
 
@@ -270,27 +270,27 @@
 {
     // Convert the contents of the characteristic value to a data-object //
     NSData *data = [characteristic value];
-    
+
     // Get the byte sequence of the data-object //
     const uint8_t *reportDataPointer = [data bytes];
     reportDataPointer++;
-    
-    
+
+
     int32_t tempData = (int32_t)CFSwapInt32LittleToHost(*(uint32_t *)reportDataPointer);
 
     int32_t exponent = (tempData & 0xFF000000) >> 24;
     int32_t mantissa = (int32_t)(tempData & 0x00FFFFFF);
-    
- 
+
+
     if (mantissa >= 0x800000) {
         mantissa = -(0x01000000 - mantissa);
     }
-    
+
     if (exponent >= 0x80) {
         exponent = -(0x0100 - exponent);
     }
-    
-    
+
+
     float tempValue = (float)(mantissa * pow(10, exponent));
     self.tempStringValue = [NSString stringWithFormat:@"%.2f",(float) tempValue];
 }
@@ -306,9 +306,9 @@
 {
     NSData * updatedValue = characteristic.value;
     uint8_t* dataPointer = (uint8_t*)[updatedValue bytes];
-    
+
     uint8_t flags = dataPointer[0];
-    
+
      if( flags & 0x04 )
      {
          return true;
@@ -326,12 +326,12 @@
 -(void)getTempType:(CBCharacteristic *)characteristic
 {
     /* temperature type */
-    
+
     NSData * updatedValue = characteristic.value;
     uint8_t* dataPointer = (uint8_t*)[updatedValue bytes];
     uint8_t type = *(uint8_t*)dataPointer;
     NSString* location = nil;
-    
+
     switch (type)
     {
         case 0x01:
@@ -368,7 +368,7 @@
     {
         self.tempType = [NSString stringWithFormat:@"%@", location];
     }
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:updatedValue]]];
 }
 

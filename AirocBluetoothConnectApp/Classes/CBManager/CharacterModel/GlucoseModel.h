@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -52,7 +52,7 @@
 /*!
  *  @property recordNameArray
  *
- *  @discussion Array of the name of records 
+ *  @discussion Array of the name of records
  *
  */
 

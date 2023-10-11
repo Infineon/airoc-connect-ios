@@ -14,35 +14,35 @@
 		<key>Service_Image</key>
 		<string>capsense</string>
 		<key>Service_Name</key>
-		<string>CapSense Service</string>
+		<string>CAPSENSE™ Service</string>
 	</dict>
 	<key>0003cab5-0000-1000-8000-00805f9b0131</key>
 	<dict>
 		<key>Service_Image</key>
 		<string>capsense</string>
 		<key>Service_Name</key>
-		<string>CapSense Service</string>
+		<string>CAPSENSE™ Service</string>
 	</dict>
 	<key>0000caa1-0000-1000-8000-00805f9b34fb</key>
 	<dict>
 		<key>Service_Image</key>
 		<string>capsense_proximity</string>
 		<key>Service_Name</key>
-		<string>CapSense Proximity</string>
+		<string>CAPSENSE™ Proximity</string>
 	</dict>
 	<key>0000caa2-0000-1000-8000-00805f9b34fb</key>
 	<dict>
 		<key>Service_Image</key>
 		<string>capsense_slider</string>
 		<key>Service_Name</key>
-		<string>CapSense Slider</string>
+		<string>CAPSENSE™ Slider</string>
 	</dict>
 	<key>0000caa3-0000-1000-8000-00805f9b34fb</key>
 	<dict>
 		<key>Service_Image</key>
 		<string>capsense_button</string>
 		<key>Service_Name</key>
-		<string>CapSense Button</string>
+		<string>CAPSENSE™ Button</string>
 	</dict>
 	<key>0000180d-0000-1000-8000-00805f9b34fb</key>
 	<dict>

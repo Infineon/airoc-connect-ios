@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -65,7 +65,7 @@
     NSMutableArray * fileDataArray = [NSMutableArray new];
     NSMutableArray * rowIdArray = [NSMutableArray new];
     NSError * error;
-    
+
     NSString * fileContents = [NSString stringWithContentsOfFile:[NSString pathWithComponents:[NSArray arrayWithObjects:filePath, fileName, nil]]
                                                         encoding:NSUTF8StringEncoding error:nil];
     if (fileContents && fileContents.length > 0)
@@ -76,7 +76,7 @@
         {
             fileContentsArray = [self removeEmptyRowsAndJunkDataFromArray:fileContentsArray];
             NSString * fileHeader = [fileContentsArray objectAtIndex:0];
-            
+
             if (fileHeader.length >= FILE_HEADER_MAX_LENGTH)
             {
                 //Parse header
@@ -85,13 +85,13 @@
                 [fileHeaderDict setObject:[fileHeader substringWithRange:NSMakeRange(8, 2)] forKey:SILICON_REV];
                 [fileHeaderDict setObject:[fileHeader substringWithRange:NSMakeRange(10, 2)] forKey:CHECKSUM_TYPE];
                 [fileContentsArray removeObjectAtIndex:0];
-                
+
                 //Parse data row
                 NSString * rowID = @"";
                 int rowCount = 0;
                 NSMutableDictionary * rowIdDict = [NSMutableDictionary new];
                 NSCharacterSet * charsToRemove = [NSCharacterSet characterSetWithCharactersInString:@"@:"];
-                
+
                 for (int i = 0; i < fileContentsArray.count; i++)
                 {
                     //Strip '@' and ':' prefix off
@@ -99,11 +99,11 @@
                     dataRowString = [[dataRowString componentsSeparatedByCharactersInSet:charsToRemove] componentsJoinedByString:@""];
                     if (dataRowString.length > 20)
                     {
-                        
+
                         if ([self parseDataRowString:dataRowString] != nil)
                         {
                             [fileDataArray addObject:[self parseDataRowString:dataRowString]];
-                            
+
                             //Counting Rows in each RowID
                             if ([rowID  isEqual: @""])
                             {
@@ -137,7 +137,7 @@
                         break;
                     }
                 }
-                
+
                 if (!error)
                 {
                     //Counting Rows in each RowID. Adding last RowID count to Dict.
@@ -178,7 +178,7 @@
     NSDictionary *appInfoDict = nil;
     NSMutableArray *fileDataArr = [NSMutableArray new];
     NSError *error;
-    
+
     NSString *fileContents = [NSString stringWithContentsOfFile:[NSString pathWithComponents:[NSArray arrayWithObjects:filePath, fileName, nil]]
                                                         encoding:NSUTF8StringEncoding error:nil];
     if (fileContents && fileContents.length > 0)
@@ -189,36 +189,36 @@
         {
             fileContentsArr = [self removeEmptyRowsAndJunkDataFromArray:fileContentsArr];
             NSString * fileHeader = [fileContentsArr objectAtIndex:0];
-            
+
             if (fileHeader.length >= FILE_HEADER_MAX_LENGTH_V1)
             {
                 NSData * fileHeaderData = [Utilities dataFromHexString:fileHeader];
                 uint8_t fileVersion = ((uint8_t *)[fileHeaderData bytes])[0];
-                
+
                 if (iFileVersionTypeCYACD2 == fileVersion)
                 {
                     //Parse header
                     [fileHeaderDict setObject:[NSNumber numberWithInt:fileVersion] forKey:FILE_VERSION];
-                    
+
                     NSData * siliconIDData = [Utilities dataFromHexString:[fileHeader substringWithRange:NSMakeRange(2, 8)]];
                     NSString * siliconIDStr = [Utilities HEXStringLittleFromByteArray:(uint8_t *)[siliconIDData bytes] ofSize:4];
                     [fileHeaderDict setObject:siliconIDStr forKey:SILICON_ID];
-                    
+
                     [fileHeaderDict setObject:[fileHeader substringWithRange:NSMakeRange(10, 2)] forKey:SILICON_REV];
                     [fileHeaderDict setObject:[fileHeader substringWithRange:NSMakeRange(12, 2)] forKey:CHECKSUM_TYPE];
-                    
+
                     NSString * appIDStr = [fileHeader substringWithRange:NSMakeRange(14, 2)];
                     NSData * appIDData = [Utilities dataFromHexString:appIDStr];
                     uint8_t appID = ((uint8_t *)[appIDData bytes])[0];
                     [fileHeaderDict setObject:[NSNumber numberWithUnsignedChar:appID] forKey:APP_ID];
-                    
+
                     NSString * productIDStr = [fileHeader substringWithRange:NSMakeRange(16, 8)];
                     NSData * productIDData = [Utilities dataFromHexString:productIDStr];
                     uint32_t productID = [Utilities parse4ByteValueLittleFromByteArray:(uint8_t *)[productIDData bytes]];
                     [fileHeaderDict setObject:[NSNumber numberWithUnsignedInt:productID] forKey:PRODUCT_ID];
-                    
+
                     [fileContentsArr removeObjectAtIndex:0];//Remove header line
-                    
+
                     //Parse data lines
                     for (int i = 0; i < fileContentsArr.count; i++)
                     {
@@ -236,7 +236,9 @@
                             dataRowStr = [dataRowStr substringFromIndex:[EIV_PREFIX length]];//Strip "@EIV:" prefix off
                             NSDictionary *dataRowDict = [self parseEivRowString_v1:dataRowStr];
                             success = (dataRowDict != nil);
-                            [fileDataArr addObject:dataRowDict];
+                            if (success){
+                                [fileDataArr addObject:dataRowDict];
+                            }
                         }
                         else if ([dataRowStr hasPrefix:DATA_PREFIX])
                         {
@@ -244,9 +246,11 @@
                             dataRowStr = [dataRowStr substringFromIndex:[DATA_PREFIX length]];//Strip ":" prefix off
                             NSDictionary *dataRowDict = [self parseDataRowString_v1:dataRowStr];
                             success = (dataRowDict != nil);
-                            [fileDataArr addObject:dataRowDict];
+                            if (success){
+                                [fileDataArr addObject:dataRowDict];
+                            }
                         }
-                        
+
                         if (!success)
                         {
                             error = [[NSError alloc] initWithDomain:PARSING_ERROR code:FILE_PARSER_ERROR_CODE userInfo:[NSDictionary dictionaryWithObject:LOCALIZEDSTRING(@"invalidFile") forKey:NSLocalizedDescriptionKey]];
@@ -254,7 +258,7 @@
                             break;
                         }
                     }
-                    
+
                     if (!error)
                     {
                         finish(fileHeaderDict, appInfoDict, fileDataArr, nil);
@@ -297,7 +301,7 @@
     [charsToRemain formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
     [charsToRemain addCharactersInString:@"@:,"];// CYACD - data rows start with ':'; CYACD2 - data rows start with ':', EIV row starts with '@EIV:', APPINFO row starts with '@APPINFO:'
     NSCharacterSet * charsToRemove = [charsToRemain invertedSet];
-    
+
     for (int i = 0; i < dataArray.count; ) {
         if ([[dataArray objectAtIndex:i] isEqualToString:@""]) {
             [dataArray removeObjectAtIndex:i];
@@ -320,24 +324,24 @@
 - (NSMutableDictionary *)parseDataRowString:(NSString *)rowData
 {
     NSMutableDictionary * rowDataDict = [NSMutableDictionary new];
-    
+
     [rowDataDict setValue:[rowData substringWithRange:NSMakeRange(0, 2)] forKey:ARRAY_ID];
     [rowDataDict setValue:[rowData substringWithRange:NSMakeRange(2, 4)] forKey:ROW_NUMBER];
     [rowDataDict setValue:[rowData substringWithRange:NSMakeRange(6, 4)] forKey:DATA_LENGTH];
-    
+
     NSString * dataString = [rowData substringWithRange:NSMakeRange(10, rowData.length - 12)];
     if ([Utilities getIntegerFromHexString:[rowDataDict objectForKey:DATA_LENGTH]] != dataString.length/2 )
     {
         return nil;
     }
-    
+
     NSMutableArray * byteArray = [NSMutableArray new];
     for (int i = 0; i + 2 <= dataString.length; i += 2) {
         [byteArray addObject:[dataString substringWithRange:NSMakeRange(i, 2)]];
     }
     [rowDataDict setValue:byteArray forKey:DATA_ARRAY];
     [rowDataDict setValue:[rowData substringWithRange:NSMakeRange(rowData.length - 2, 2)] forKey:CHECKSUM_OTA];
-    
+
     return rowDataDict;
 }
 
@@ -350,34 +354,34 @@
 - (NSMutableDictionary *)parseDataRowString_v1:(NSString *)rowData
 {
     const int ADDR_LEN = 8;
-    
+
     if (nil == rowData || [rowData length] < ADDR_LEN || ([rowData length] - ADDR_LEN) % 2)
     {
         return nil;
     }
-    
+
     NSMutableDictionary * rowDataDict = [NSMutableDictionary new];
     [rowDataDict setObject:[NSNumber numberWithUnsignedChar:RowTypeData] forKey:ROW_TYPE];
-    
+
     NSString * addrStr = [rowData substringWithRange:NSMakeRange(0, ADDR_LEN)];
     NSData * addrData = [Utilities dataFromHexString:addrStr];
     uint32_t addr = [Utilities parse4ByteValueLittleFromByteArray:(uint8_t *)[addrData bytes]];
     [rowDataDict setObject:[NSNumber numberWithUnsignedInt:addr] forKey:ADDRESS];
-    
+
     NSString * dataStr = [rowData substringWithRange:NSMakeRange(ADDR_LEN, [rowData length] - ADDR_LEN)];
-    
+
     NSData * bytesData = [Utilities dataFromHexString:dataStr];
     uint32_t crc32 = [Utilities CRC32ForByteArray:(uint8_t *)[bytesData bytes] ofSize:(uint32_t)[bytesData length]];
-    
+
     [rowDataDict setObject:[NSNumber numberWithUnsignedInt:crc32] forKey:CRC_32];
     [rowDataDict setObject:[NSNumber numberWithUnsignedInt:(uint32_t)[bytesData length]] forKey:DATA_LENGTH];
-    
+
     NSMutableArray * byteArr = [NSMutableArray new];
     for (int i = 0; i + 2 <= dataStr.length; i += 2) {
         [byteArr addObject:[dataStr substringWithRange:NSMakeRange(i, 2)]];
     }
     [rowDataDict setValue:byteArr forKey:DATA_ARRAY];
-    
+
     return rowDataDict;
 }
 
@@ -391,9 +395,9 @@
 {
     if (nil == rowData)
         return nil;
-    
+
     NSMutableDictionary * rowDataDict = [NSMutableDictionary new];
-    
+
     NSRange range = [rowData rangeOfString:APPINFO_SEPARATOR];
     if (range.length <= 0)
         return nil;
@@ -405,7 +409,7 @@
     NSData *appStartData = [Utilities dataFromHexString:appStartStr isLSB:NO];
     if (appStartData == nil || appStartData.length == 0 || appStartData.length > 4)
         return nil;
-    
+
     uint8_t appStartBytes[4] = {0,0,0,0};//If data is less than 4 bytes then high bytes will be set to 0
     for (int i = 0; i < appStartData.length; i++)
     {
@@ -413,7 +417,7 @@
     }
     uint32_t appStart = [Utilities parse4ByteValueLittleFromByteArray:appStartBytes];
     [rowDataDict setValue:@(appStart) forKey:APPINFO_APP_START];
-    
+
     pos += length + APPINFO_SEPARATOR.length;
     length = rowData.length - pos;
     NSString *appSizeStr = [rowData substringWithRange:NSMakeRange(pos, length)];
@@ -428,7 +432,7 @@
     }
     uint32_t appSize = [Utilities parse4ByteValueLittleFromByteArray:appSizeBytes];
     [rowDataDict setValue:@(appSize) forKey:APPINFO_APP_SIZE];
-    
+
     return rowDataDict;
 }
 
@@ -444,19 +448,19 @@
     {
         return nil;
     }
-    
+
     NSMutableDictionary * rowDataDict = [NSMutableDictionary new];
     [rowDataDict setValue:[NSNumber numberWithUnsignedChar:RowTypeEiv] forKey:ROW_TYPE];
-    
+
     uint32_t numBytes = (uint32_t)(rowData.length / 2);
     [rowDataDict setObject:[NSNumber numberWithUnsignedInt:numBytes] forKey:DATA_LENGTH];
-    
+
     NSMutableArray * dataArr = [NSMutableArray new];
     for (int i = 0; i + 2 <= rowData.length; i += 2) {
         [dataArr addObject:[rowData substringWithRange:NSMakeRange(i, 2)]];
     }
     [rowDataDict setValue:dataArr forKey:DATA_ARRAY];
-    
+
     return rowDataDict;
 }
 

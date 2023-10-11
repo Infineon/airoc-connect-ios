@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -91,7 +91,7 @@
     proximityServices = [[NSMutableArray alloc] init];
     findMeServices = [[NSMutableArray alloc] init];
     [self prepareCarouselList];
-    
+
     isSensorHubFound = NO;
 }
 
@@ -125,14 +125,14 @@
 {
     UILabel *label = nil;
     UIImageView *serviceImage = nil;
-    
+
     //create new view if no view is available for recycling
     if (nil == view)
     {
         //don't do anything specific to the index within
         //this `if (view == nil) {...}` statement because the view will be
         //recycled and used with other index values later
-        
+
         float refWidth;
         if (IS_IPHONE)
         {
@@ -142,18 +142,18 @@
         {
             refWidth = MIN(IPAD_PORTRAIT_SCREEN_WIDTH, _carouselView.frame.size.width);
         }
-        
+
         view = [[UIView alloc] initWithFrame:CGRectMake(0, 0,refWidth/1.25f, refWidth/2.0f)];
-        
+
         serviceImage = [[UIImageView alloc] initWithFrame:CGRectMake(0, 30.0f, refWidth/1.25f,(refWidth/2.0f) - 30.0)];
         serviceImage.contentMode = UIViewContentModeScaleAspectFit;
         serviceImage.tag = 2 ;
-        
+
         label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0,refWidth/1.25f, 30.0f)];
         label.backgroundColor = [UIColor clearColor];
-        [label setTextColor:BLUE_COLOR];
+//        label.textColor = COLOR_DARK;
         label.textAlignment = NSTextAlignmentCenter;
-        label.font = [UIFont fontWithName:DEFAULT_FONT_BOLD size:18];
+        label.font = [UIFont fontWithName:DEFAULT_FONT_BOLD size:FONT_SIZE_MEDIUM];
         label.tag = 1;
         [view addSubview:serviceImage];
         [view addSubview:label];
@@ -164,14 +164,14 @@
         label = (UILabel *)[view viewWithTag:1];
         serviceImage = (UIImageView *)[view viewWithTag:2];
     }
-    
+
     //set item label
     //remember to always set any properties of your carousel item
     //views outside of the `if (view == nil) {...}` check otherwise
     //you'll get weird issues with carousel item content appearing
     //in the wrong place in the carousel
     serviceImage.image = [UIImage imageNamed:[[carouselArray objectAtIndex:index] valueForKey:k_SERVICE_IMAGE_NAME_KEY]];
-    
+
     label.text =[[carouselArray objectAtIndex:index] valueForKey:k_SERVICE_NAME_KEY];
     return view;
 }
@@ -195,22 +195,15 @@
     }
     else if (option == iCarouselOptionRadius)
     {
-        return value * 1.0;
+        return (IS_IPAD ? value * 3 : value);
     }
     else if (option == iCarouselOptionCount)
     {
-        if (carouselArray.count == 2)
-        {
-            return 2;
-        }
-        else
-        {
-            return (IS_IPAD ? carouselArray.count : 4);
-        }
+        return (carouselArray.count == 2) ? 2 : 6;
     }
     else if (option == iCarouselOptionVisibleItems)
     {
-        return (IS_IPAD ? carouselArray.count: value);
+        return (IS_IPAD ? carouselArray.count: 3);
     }
     return value;
 }
@@ -240,9 +233,9 @@
 {
     NSDictionary *carouselItem = [carouselArray objectAtIndex:index];
     NSString *keyAtIndex = [[[[CyCBManager sharedManager] serviceUUIDDict] allKeysForObject:carouselItem] objectAtIndex:0];
-    
+
     CBUUID *keyID = [CBUUID UUIDWithString:keyAtIndex];
-    
+
     if([keyID isEqual:HRM_HEART_RATE_SERVICE_UUID])
     {
         HeartRateMesurementVC *hrm = [self.storyboard instantiateViewControllerWithIdentifier:HRM_VIEW_SB_ID];
@@ -286,7 +279,7 @@
         capsenseVC.capsenseCharList = [NSMutableArray arrayWithArray:carouselCharacteristics];
         [self.navigationController pushViewController:capsenseVC animated:YES];
     }
-    
+
     else if ([keyID isEqual:CAPSENSE_BUTTON_CHARACTERISTIC_UUID])
     {
         CapsenseButtonVC *buttonVC = [self.storyboard instantiateViewControllerWithIdentifier:CAPSENSE_BTN_VIEW_SB_ID];
@@ -422,7 +415,7 @@
 -(void)prepareCarouselList
 {
     NSArray *allService = [self UUIDArray:[[[CyCBManager sharedManager] serviceUUIDDict] allKeys]];
-    
+
     if (proximityServices)
     {
         [proximityServices removeAllObjects];
@@ -431,7 +424,7 @@
     {
         [findMeServices removeAllObjects];
     }
-    
+
     // Check for sensor hub
     for (CBService *service in [[CyCBManager sharedManager] foundServices])
     {
@@ -439,12 +432,12 @@
         {
             [carouselArray addObject:[[[CyCBManager sharedManager] serviceUUIDDict] valueForKey:[service.UUID.UUIDString lowercaseString]]];
             [carouselServices addObject:service];
-            
+
             isSensorHubFound = YES;
             break;
         }
     }
-    
+
     if (!isSensorHubFound)
     {
         for(CBService *service in [[CyCBManager sharedManager] foundServices])
@@ -453,7 +446,7 @@
             {
                 NSInteger serviceKeyIndex = [allService indexOfObject:service.UUID];
                 CBUUID *keyID = [allService objectAtIndex:serviceKeyIndex];
-                
+
                 if([service.UUID isEqual:CAPSENSE_SERVICE_UUID] || [service.UUID isEqual:CUSTOM_CAPSENSE_SERVICE_UUID])
                 {
                     [self checkCapsenseProfile:service];
@@ -477,15 +470,14 @@
             }
         }
     }
-    
+
     if ([[CyCBManager sharedManager] foundServices].count == 0)
     {
         emptyServiceLabel = [[UILabel alloc] initWithFrame:CGRectMake((self.view.frame.size.width/2)-(EMPTY_SERVICE_LABEL_WIDTH/2), (self.view.frame.size.height/2)-(EMPTY_SERVICE_LABEL_HEIGHT/2), EMPTY_SERVICE_LABEL_WIDTH, EMPTY_SERVICE_LABEL_HEIGHT)];
         emptyServiceLabel.text = LOCALIZEDSTRING(@"serviceNotFound");
-        emptyServiceLabel.font = [UIFont fontWithName:DEFAULT_FONT size:20];
+        emptyServiceLabel.font = [UIFont fontWithName:DEFAULT_FONT size:FONT_SIZE_MEDIUM];
         emptyServiceLabel.backgroundColor = [UIColor clearColor];
         emptyServiceLabel.textAlignment = NSTextAlignmentCenter;
-        emptyServiceLabel.textColor = BLUE_COLOR;
         emptyServiceLabel.clipsToBounds = YES;
         [_carouselView addSubview:emptyServiceLabel];
     }
@@ -494,7 +486,7 @@
         //To add GATT DB item
         [self addGattDBCarouselItem];
     }
-    
+
     if([carouselArray count])
     {
         [self initCarousel];
@@ -525,11 +517,11 @@
 -(void)checkCapsenseProfile:(CBService *)service
 {
     NSArray *allService = [self UUIDArray:[[[CyCBManager sharedManager] serviceUUIDDict] allKeys]];
-    
+
     if([service.UUID isEqual:CAPSENSE_SERVICE_UUID] || [service.UUID isEqual:CUSTOM_CAPSENSE_SERVICE_UUID]) {
         [[CyCBManager sharedManager] setMyService:service];
         capsenseModel *capsenseServiceModel = [[capsenseModel alloc] init];
-        
+
         __weak __typeof(self) wself = self;
         [capsenseServiceModel startDiscoverCharacteristicWithUUID:nil completionHandler:^(BOOL success, CBService *service, NSError *error) {
             __strong __typeof(self) sself = wself;
@@ -537,7 +529,7 @@
                 if (success) {
                     NSMutableArray *tempCarouselArray = [NSMutableArray array];
                     NSInteger serviceKeyIndex = 0;
-                    
+
                     for (CBCharacteristic *characteristic in service.characteristics) {
                         if ([characteristic.UUID isEqual:CAPSENSE_SLIDER_CHARACTERISTIC_UUID] || [characteristic.UUID isEqual:CUSTOM_CAPSENSE_SLIDER_CHARACTERISTIC_UUID]) {
                             serviceKeyIndex = [allService indexOfObject:CAPSENSE_SLIDER_CHARACTERISTIC_UUID];
@@ -546,12 +538,12 @@
                         } else if ([characteristic.UUID isEqual:CAPSENSE_BUTTON_CHARACTERISTIC_UUID] || [characteristic.UUID isEqual:CUSTOM_CAPSENSE_BUTTONS_CHARACTERISTIC_UUID]) {
                             serviceKeyIndex = [allService indexOfObject:CAPSENSE_BUTTON_CHARACTERISTIC_UUID];
                         }
-                        
+
                         CBUUID *keyID = [allService objectAtIndex:serviceKeyIndex];
                         [tempCarouselArray addObject:[[[CyCBManager sharedManager] serviceUUIDDict] valueForKey:[keyID.UUIDString lowercaseString]]];
                         [sself->carouselCharacteristics addObject:characteristic];
                     }
-                    
+
                     if([tempCarouselArray count] > 1) {
                         NSInteger serviceKeyIndex = [allService indexOfObject:service.UUID];
                         CBUUID *keyID = [allService objectAtIndex:serviceKeyIndex];
@@ -587,11 +579,11 @@
     {
         return NO;
     }
-    
+
     [proximityServices addObject:service];
-    
+
     NSArray *allService = [self UUIDArray:[[[CyCBManager sharedManager] serviceUUIDDict] allKeys]];
-    
+
     for(CBUUID *findMEServiceID in findMEUUIDs)
     {
         NSInteger fServiceKeyIndex = [allService indexOfObject:findMEServiceID];
@@ -616,8 +608,10 @@
     _carouselView.delegate = self ;
     _carouselView.dataSource = self ;
     _carouselView.type = iCarouselTypeRotary;
+    _carouselView.scrollSpeed = 0.9;
+    _carouselView.decelerationRate = 0.7;
     [_carouselView reloadData];
-    
+
     [self performSelector:@selector(animateCarousel) withObject:nil afterDelay:0.2];
 }
 

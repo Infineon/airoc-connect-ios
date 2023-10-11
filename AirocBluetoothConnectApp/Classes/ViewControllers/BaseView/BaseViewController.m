@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -101,7 +101,7 @@ static NSInteger const kNavButtonWidth = 40;
         rightMenuViewController = [self.storyboard instantiateViewControllerWithIdentifier:MENU_VIEW_ID];
         [self.view addSubview:rightMenuViewController.view];
         [self.view bringSubviewToFront:rightMenuViewController.view];
-        
+
         rightMenuViewController.view.frame = CGRectMake(0, [UIApplication sharedApplication].statusBarFrame.size.height+NAV_BAR_HEIGHT,
                                                         self.view.frame.size.width, self.view.frame.size.height - NAV_BAR_HEIGHT);
         rightMenuViewController.delegate = self;
@@ -125,8 +125,8 @@ static NSInteger const kNavButtonWidth = 40;
                                                   forBarMetrics:UIBarMetricsDefault];
     self.navigationController.navigationBar.shadowImage = nil;
     self.navigationController.navigationBar.translucent = YES;
-    self.navigationController.navigationBar.backgroundColor = BLUE_COLOR;
-    
+    self.navigationController.navigationBar.backgroundColor = COLOR_PRIMARY;
+
     CGRect labelFrame = CGRectMake(-5, 0, [[UIScreen mainScreen] bounds].size.width, NAV_BAR_HEIGHT);
     // Add Navbar title label
     _navBarTitleLabel = [[UILabel alloc] initWithFrame:labelFrame];
@@ -134,21 +134,21 @@ static NSInteger const kNavButtonWidth = 40;
     _navBarTitleLabel.textAlignment = NSTextAlignmentLeft;
     _navBarTitleLabel.textColor = [UIColor whiteColor];
     _navBarTitleLabel.text = @"";
-    
+
     // Add NavBar buttons
     _rightMenuButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, kNavButtonWidth, NAV_BAR_HEIGHT)];
     [_rightMenuButton setImage:[UIImage imageNamed:MENU_ICON_IMAGE] forState:UIControlStateNormal];
     [_rightMenuButton addTarget:self action:@selector(rightMenuButtonClicked:) forControlEvents:UIControlEventTouchUpInside];
-    
+
     _shareButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, kNavButtonWidth, NAV_BAR_HEIGHT)];
     [_shareButton setImage:[UIImage imageNamed:SHARE_IMAGE] forState:UIControlStateNormal];
     [_shareButton addTarget:self action:@selector(shareButtonClicked:) forControlEvents:UIControlEventTouchUpInside];
-    
+
     self.navigationItem.titleView = _navBarTitleLabel;
     isTitleViewSearchBar = NO;
-    
+
     self.navigationItem.rightBarButtonItems = [NSArray arrayWithObjects:[[UIBarButtonItem alloc] initWithCustomView:_rightMenuButton],[[UIBarButtonItem alloc] initWithCustomView:_shareButton], nil];
-    
+
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@" " style:UIBarButtonItemStylePlain target:nil action:nil];
     self.navigationController.navigationBar.tintColor=[UIColor whiteColor];
 }
@@ -164,9 +164,9 @@ static NSInteger const kNavButtonWidth = 40;
     _searchButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, kNavButtonWidth, NAV_BAR_HEIGHT)];
     [_searchButton setImage:[UIImage imageNamed:SEARCH_ICON_IMAGE] forState:UIControlStateNormal];
     [_searchButton addTarget:self action:@selector(replaceNavBarTitleWithSearchBar) forControlEvents:UIControlEventTouchUpInside];
-    
+
     self.navigationItem.rightBarButtonItems = [NSArray arrayWithObjects:[[UIBarButtonItem alloc] initWithCustomView:_rightMenuButton],[[UIBarButtonItem alloc] initWithCustomView:_shareButton],[[UIBarButtonItem alloc] initWithCustomView:_searchButton], nil];
-    
+
     CGRect titleFrame = CGRectMake(-5, 0, [[UIScreen mainScreen] bounds].size.width, NAV_BAR_HEIGHT);
     self.navBarTitleLabel.frame = titleFrame;
     self.navigationItem.titleView = _navBarTitleLabel;
@@ -197,12 +197,12 @@ static NSInteger const kNavButtonWidth = 40;
     [_searchButton setImage:[UIImage imageNamed:SEARCH_ICON_IMAGE] forState:UIControlStateNormal];
     [_searchButton addTarget:self action:@selector(addSearchButtonToNavBar) forControlEvents:UIControlEventTouchUpInside];
     [_searchButton addTarget:self action:@selector(onSearchBarDidHide) forControlEvents:UIControlEventTouchUpInside];
-    
+
     self.navigationItem.rightBarButtonItems = [NSArray arrayWithObjects:[[UIBarButtonItem alloc] initWithCustomView:_rightMenuButton],[[UIBarButtonItem alloc] initWithCustomView:_shareButton],[[UIBarButtonItem alloc] initWithCustomView:_searchButton], nil];
-    
+
     _searchBar = [UISearchBar new];
     _searchBar.delegate = self;
-    _searchBar.tintColor = BLUE_COLOR; // Cursor color
+    _searchBar.tintColor = COLOR_ACCENT; // Cursor color
     _searchBar.autocapitalizationType = UITextAutocapitalizationTypeNone;
     _searchBar.autocorrectionType = UITextAutocorrectionTypeNo;
     _searchBar.returnKeyType = UIReturnKeyDone;
@@ -210,7 +210,7 @@ static NSInteger const kNavButtonWidth = 40;
         // Preserving pre iOS 13 L&F
         _searchBar.searchTextField.backgroundColor = [UIColor whiteColor];
     }
-    
+
     self.navigationItem.titleView = _searchBar;
     [_searchBar becomeFirstResponder];
     isTitleViewSearchBar = YES;
@@ -287,12 +287,12 @@ static NSInteger const kNavButtonWidth = 40;
         // Send the .txt file for logger view controller
         LoggerViewController *loggerVC = [self.navigationController.viewControllers lastObject];
         NSString *docsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        NSString *filePath = [docsPath stringByAppendingPathComponent:loggerVC.currentLogFileName];
+        NSString *filePath = [NSString stringWithFormat:@"%@.txt", [docsPath stringByAppendingPathComponent:loggerVC.currentLogFile]];
         NSURL *textFileUrl = [NSURL fileURLWithPath:filePath];
-        
+
         NSError *error;
         [loggerVC.loggerTextView.text writeToURL:textFileUrl atomically:YES encoding:NSUTF8StringEncoding error:&error];
-        
+
         NSArray *shareExcludedActivitiesArray = @[UIActivityTypeCopyToPasteboard,UIActivityTypeAssignToContact,UIActivityTypeMessage,UIActivityTypePostToFacebook,UIActivityTypePostToTwitter];
         [self showActivityPopover:textFileUrl rect:[(UIButton *)sender frame] excludedActivities:shareExcludedActivitiesArray];
     }
@@ -313,9 +313,9 @@ static NSInteger const kNavButtonWidth = 40;
     } else {
         UIGraphicsBeginImageContext([UIApplication sharedApplication].keyWindow.bounds.size);
     }
-    
+
     [[UIApplication sharedApplication].keyWindow.rootViewController.view drawViewHierarchyInRect:[UIApplication sharedApplication].keyWindow.bounds afterScreenUpdates:YES];
-    
+
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     [self showActivityPopover:[self saveImage:image] rect:[(UIButton*)sender frame] excludedActivities:nil];
@@ -353,7 +353,7 @@ static NSInteger const kNavButtonWidth = 40;
         shareAction.popoverPresentationController.sourceView = self.parentViewController.view;
         shareAction.popoverPresentationController.sourceRect = rect;
     }
-    
+
     if (excludedActivityTypes != nil)
     {
         shareAction.excludedActivityTypes = excludedActivityTypes;
@@ -361,7 +361,7 @@ static NSInteger const kNavButtonWidth = 40;
     else {
         shareAction.excludedActivityTypes=@[UIActivityTypeCopyToPasteboard,UIActivityTypeAssignToContact,UIActivityTypeMessage];
     }
-    
+
     [self presentViewController:shareAction animated:TRUE completion:nil];
 }
 
@@ -380,7 +380,7 @@ static NSInteger const kNavButtonWidth = 40;
     rightMenuViewController.view.hidden = NO;
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         const UIInterfaceOrientation toOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-        const CGFloat mult = toOrientation == UIInterfaceOrientationPortrait ? 0.6 : 0.5;
+        const CGFloat mult = toOrientation == UIInterfaceOrientationPortrait ? 0.4 : 0.3;
         rightMenuViewController.rightMenuViewWidthConstraint.constant = rightMenuViewController.view.frame.size.width * mult;
     } else {
         rightMenuViewController.rightMenuViewWidthConstraint.constant = rightMenuViewController.view.frame.size.width - 50;
@@ -447,11 +447,11 @@ static NSInteger const kNavButtonWidth = 40;
     // Remove other views
     [self removeRightMenuView];
     [self removeLastShowedView];
-    
+
     // Check internet connectivity
     Reachability *networkReachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus connectionStatus = [networkReachability currentReachabilityStatus];
-    
+
     if (connectionStatus != NotReachable) {
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:BLE_PRODUCTS_URL] options:@{} completionHandler:nil];
     } else {
@@ -460,29 +460,29 @@ static NSInteger const kNavButtonWidth = 40;
 }
 
 /*!
- *  @method showCypressContactWebPage
+ *  @method showCompanyContactWebPage
  *
- *  @discussion Method to show the webpage of Cypress contact webpage
+ *  @discussion Method to show the webpage of Infineon contact webpage
  *
  */
--(void) showCypressContactWebPage
+-(void) showCompanyContactWebPage
 {
     // Remove other views
     [self removeRightMenuView];
     [self removeLastShowedView];
-    
+
     // Check internet connectivity
     Reachability *networkReachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus connectionStatus = [networkReachability currentReachabilityStatus];
-    
+
     if (connectionStatus != NotReachable) {
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:CONTACT_URL] options:@{} completionHandler:nil];
     } else {
         _navBarTitleLabel.text = CONTACT_US;
-        
+
         // Add custom back button
         [self addCustomBackButtonToNavBar];
-        
+
         offlineContactUsView = nil;
         if (!offlineContactUsView) {
             UIViewController * contactUsVC = [self.storyboard instantiateViewControllerWithIdentifier:OFFLINE_VIEW_ID];
@@ -495,21 +495,21 @@ static NSInteger const kNavButtonWidth = 40;
 }
 
 /*!
- *  @method showCySmartHomePage
+ *  @method showCompanyHomePage
  *
- *  @discussion Method to show cypress home page
+ *  @discussion Method to show company home page
  *
  */
--(void) showCypressHomePage
+-(void) showCompanyHomePage
 {
     // Remove other views
     [self removeRightMenuView];
     [self removeLastShowedView];
-    
+
     // Check internet connectivity
     Reachability *networkReachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus connectionStatus = [networkReachability currentReachabilityStatus];
-    
+
     if (connectionStatus != NotReachable) {
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:CYPRESS_HOME_URL] options:@{} completionHandler:nil];
     } else {
@@ -523,16 +523,16 @@ static NSInteger const kNavButtonWidth = 40;
  *  @discussion Method to show cypress mobile page
  *
  */
--(void) showCypressMobilePage
+-(void) showAppMobilePage
 {
     // Remove other views
     [self removeRightMenuView];
     [self removeLastShowedView];
-    
+
     // Check internet connectivity
     Reachability *networkReachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus connectionStatus = [networkReachability currentReachabilityStatus];
-    
+
     if (connectionStatus != NotReachable) {
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:CYPRESS_MOBILE_URL] options:@{} completionHandler:nil];
     } else {
@@ -549,11 +549,11 @@ static NSInteger const kNavButtonWidth = 40;
 -(void) showAboutView
 {
     _navBarTitleLabel.text = ABOUT_US;
-    
+
     // Remove other views
     [self removeRightMenuView];
     [self removeLastShowedView];
-    
+
     // Add custom back button
     [self addCustomBackButtonToNavBar];
     appDetailsView = nil;
@@ -575,7 +575,7 @@ static NSInteger const kNavButtonWidth = 40;
     // Remove other views
     [self removeRightMenuView];
     [self removeLastShowedView];
-    
+
     [_navBarTitleLabel setText:LOGGER];
     if (![[self.navigationController.viewControllers lastObject] isKindOfClass:[LoggerViewController class]]) {
         LoggerViewController *logger = [self.storyboard instantiateViewControllerWithIdentifier:LOGGER_VIEW_ID];
@@ -593,7 +593,7 @@ static NSInteger const kNavButtonWidth = 40;
 {
     UIView *lastView = [self.view viewWithTag:VIEW_COMMON_TAG];
     [lastView removeFromSuperview];
-    
+
     [self removeCustomBackButtonFromNavBar];
 }
 
@@ -612,7 +612,7 @@ static NSInteger const kNavButtonWidth = 40;
     if ([[self.navigationController.viewControllers lastObject] isKindOfClass:[LoggerViewController class]]) {
         [self.navigationController popViewControllerAnimated:NO];
     }
-    
+
     _navBarTitleLabel.text = DEVICES;
     // Move to home screen
     [self.navigationController popToRootViewControllerAnimated:YES];
@@ -620,20 +620,19 @@ static NSInteger const kNavButtonWidth = 40;
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    
+
     __weak __typeof(self) wself = self;
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        
+
         __strong __typeof(self) sself = wself;
         if (sself) {
             const UIInterfaceOrientation toOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-            const CGFloat mult = toOrientation == UIInterfaceOrientationPortrait ? 0.6 : 0.5;
+            const CGFloat mult = toOrientation == UIInterfaceOrientationPortrait ? 0.4 : 0.3;
             if (!sself->rightMenuViewController.view.isHidden) {
                 sself->rightMenuViewController.rightMenuViewWidthConstraint.constant = sself->rightMenuViewController.view.frame.size.width * mult;
-                
                 [sself->rightMenuViewController.view layoutIfNeeded];
             }
-            
+
             //Left aligning the Title View
             if (sself->isTitleViewSearchBar) {
                 if (sself.navigationItem.rightBarButtonItems.count > 2) {

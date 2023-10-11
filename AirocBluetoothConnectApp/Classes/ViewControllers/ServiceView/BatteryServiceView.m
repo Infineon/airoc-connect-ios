@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -84,7 +84,7 @@
 {
     // Calculate the view height with the current battery level value
     float heightValue = (percentViewRefHeight/100.0) * percentageValue;
-    
+
     // View animation
     __weak __typeof(self) wself = self;
     [UIView animateWithDuration:duration animations:^{
@@ -96,7 +96,7 @@
     } completion:^(BOOL finished) {
         // The call back is ignored
     }];
-    
+
     _batteryPercentageValueLabel.text = [NSString stringWithFormat:@"%d%%",percentageValue];
 }
 

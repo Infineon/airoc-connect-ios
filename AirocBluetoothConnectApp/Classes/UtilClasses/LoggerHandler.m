@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -107,7 +107,7 @@
 -(NSString *)formatDate:(NSDate *)date {
     NSDateFormatter *dateTimeFormatter = [[NSDateFormatter alloc] init];
     dateTimeFormatter.dateFormat = [NSString stringWithFormat:@"%@|%@", DATE_FORMAT, TIME_FORMAT];
-    
+
     NSString *dateTimeString = [dateTimeFormatter stringFromDate:date];
     return dateTimeString;
 }
@@ -121,7 +121,7 @@
 -(NSDate*)parseDate:(NSString *)dateTimeString {
     NSDateFormatter *dateTimeFormatter = [[NSDateFormatter alloc] init];
     dateTimeFormatter.dateFormat = [NSString stringWithFormat:@"%@|%@", DATE_FORMAT, TIME_FORMAT];
-    
+
     NSDate *date = [dateTimeFormatter dateFromString:dateTimeString];
     return date;
 }
@@ -140,7 +140,7 @@
 
         NSCalendar *calendar = [NSCalendar currentCalendar];
         NSCalendarUnit flags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay;
-        
+
         BOOL(^areDatesEqual)(NSDate *date1, NSDate *date2) = ^BOOL(NSDate *date1, NSDate *date2) {
             NSDateComponents *comp1 = [calendar components:flags fromDate:date1];
             NSDateComponents *comp2 = [calendar components:flags fromDate:date2];
@@ -157,14 +157,14 @@
                 [dict setValue:date forKey:dateString];
             }
         }
-        
+
         // Sort DESC
         NSArray *keys = [dict keysSortedByValueUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
             NSDate *date1 = (NSDate *)obj1;
             NSDate *date2 = (NSDate *)obj2;
             return [date2 compare:date1];
         }];
-        
+
         // Leave the first 7 records (including today) and delete the rest.
         int count = 0;
         for (NSString *dateString in keys) {

@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "carousel_blood_pressure.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

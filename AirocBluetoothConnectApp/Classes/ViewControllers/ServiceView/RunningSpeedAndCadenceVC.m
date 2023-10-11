@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -50,13 +50,13 @@
     RSCModel *mRSCModel;
     NSTimer *timeUpdationTimer;
     NSDate * startTime ;
-    
+
     KLCPopup* kPopup;
     MyLineChart *myChart;
     BOOL isCharacteristicsFound;
     NSMutableArray *rscDataArray;
     NSMutableArray *timeDataArray;
-    
+
     int timerValue;
     NSTimeInterval previousTimeInterval;
     float xAxisTimeInterval;
@@ -84,16 +84,16 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     rscDataArray = [NSMutableArray array];
     timeDataArray = [NSMutableArray array];
     // Do any additional setup after loading the view.
     [self initializeView];
-    
+
     //Initialize model
     [self initRSCModel];
     [self addDoneButton];
-    
+
     previousTimeInterval = 0;
     xAxisTimeInterval = 1.0;
     devicesOrientation = [UIDevice currentDevice].orientation;
@@ -114,7 +114,7 @@
 -(void) viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self])
     {
         [mRSCModel stopUpdate];  //  Stop receiving characteristic value when the user exits the screen
@@ -123,7 +123,7 @@
 }
 /*
  #pragma mark - Navigation
- 
+
  // In a storyboard-based application, you will often want to do a little preparation before navigation
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
  // Get the new view controller using [segue destinationViewController].
@@ -230,17 +230,16 @@
     {
         [self checkGraphPointsCount];
         [myChart updateLineGraph:timeDataArray Y:rscDataArray ];
-        
+
         KLCPopupLayout layout = KLCPopupLayoutMake(KLCPopupHorizontalLayoutCenter,
-                                                   KLCPopupVerticalLayoutBottom);
-        
+                                                   KLCPopupVerticalLayoutCenter);
+
         kPopup = [KLCPopup popupWithContentView:myChart
                                        showType:KLCPopupShowTypeBounceIn
                                     dismissType:KLCPopupDismissTypeBounceOut
                                        maskType:KLCPopupMaskTypeDimmed
                        dismissOnBackgroundTouch:YES
                           dismissOnContentTouch:NO];
-        
         [kPopup showWithLayout:layout];
     }
     else
@@ -254,14 +253,14 @@
  *
  */
 -(void) checkGraphPointsCount{
-    
+
     if (timeDataArray.count > MAX_GRAPH_POINTS) {
         timeDataArray = [[timeDataArray subarrayWithRange:NSMakeRange(timeDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
         myChart.chartView.setXmin = YES;
     }else{
         myChart.chartView.setXmin = NO;
     }
-    
+
     if (rscDataArray.count > MAX_GRAPH_POINTS) {
         rscDataArray = [[rscDataArray subarrayWithRange:NSMakeRange(rscDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
     }
@@ -278,7 +277,7 @@
     UIImage *screenShot = [Utilities captureScreenShot];
     [kPopup dismiss:YES];
     CGRect rect = [(UIButton *)sender frame];
-    
+
     CGRect newRect = CGRectMake(rect.origin.x, rect.origin.y + (self.view.frame.size.height/2), rect.size.width, rect.size.height);
     [self showActivityPopover:[self saveImage:screenShot] rect:newRect excludedActivities:nil];
 }
@@ -294,7 +293,7 @@
     if (!sender.selected)
     {
         // Check whether the weight is entered by the user
-        
+
         if([_weightTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length == 0)
         {
             [self.view makeToast:LOCALIZEDSTRING(@"emptyWeightFieldWarning")];
@@ -307,25 +306,25 @@
         [_avgSpeedUnitLabel setHidden:NO];
         [_distanceUnitLabel setHidden:NO];
         [_distanceValueLabel setHidden:NO];
-        
+
         [_weightTextField resignFirstResponder];
-        
+
         if (isCharacteristicsFound)
         {
             [self startUpdateChar];
-            
+
             // Reset time
             startTime = [NSDate date];
             timerValue = 0;
-            
+
             // Reset graph
             [timeDataArray removeAllObjects];
-            
+
             // Initialize the time
             timeUpdationTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateTimeLabel) userInfo:nil repeats:YES];
             sender.selected = YES;
         }
-        
+
     }
     else
     {
@@ -347,25 +346,25 @@
 -(void) UpdateRSCWithChangeInTime
 {
     // Calculate and update average speed
-    
+
     _avgSpeedLabel.text = [NSString stringWithFormat:@"%0.2f",mRSCModel.InstantaneousSpeed];
-    
+
     // Handle the speed value to update the graph
     if(mRSCModel.InstantaneousSpeed)
     {
         NSTimeInterval timeInterval = fabs([startTime timeIntervalSinceNow]);
         [timeDataArray addObject:@(timeInterval)];
-        
+
         if (previousTimeInterval == 0)
         {
             previousTimeInterval = timeInterval;
         }
-        
+
         if (timeInterval > previousTimeInterval)
         {
             xAxisTimeInterval = timeInterval - previousTimeInterval;
         }
-        
+
         [rscDataArray addObject:@(mRSCModel.InstantaneousSpeed)];
         if(myChart && kPopup.isShowing)
         {
@@ -387,14 +386,14 @@
 {
     timerValue++;
     _timeLabel.text =  [Utilities timeInFormat:timerValue];
-    
+
     // Calculate and update Calories burnt
-    
+
     float userWeight = [[_weightTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0 ? [_weightTextField.text floatValue] : 0.0f;
     float burntCaloriesAmount = 0;
     if (userWeight >0)
     {
-        
+
         float time = (float)(timerValue / 60.0);
         burntCaloriesAmount = (float)(time * userWeight * 8.0)/ 1000;
     }
@@ -423,18 +422,18 @@
     if ([string isEqualToString:@""]) {
         return YES;
     }else if ([string rangeOfCharacterFromSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]].location != NSNotFound){
-        
+
         if ([string isEqualToString:@"." ] && [textField.text rangeOfString:@"."].length == 0 && textField.text.length <= 3) {
             return YES;
         }
-        
+
         return NO;
     }else{
-        
+
         if ([textField.text rangeOfString:@"."].length > 0 && ![textField.text hasSuffix:@"."]) {
             return NO;
         }
-        
+
         if ([textField.text rangeOfString:@"."].length == 0 && textField.text.length == 3) {
             return NO;
         }
@@ -483,7 +482,7 @@
             UIDeviceOrientation orientation = [UIDevice currentDevice].orientation;
             BOOL rotated = [sself didDeviceRotate:orientation];
             [sself setDeviceOrientation:orientation];
-            
+
             // if (IS_IPAD && kPopup.isShowing && [UIDevice currentDevice].orientation != UIDeviceOrientationFaceUp) {
             if (IS_IPAD && sself->kPopup.isShowing && rotated) {
                 [sself->kPopup dismiss:NO];

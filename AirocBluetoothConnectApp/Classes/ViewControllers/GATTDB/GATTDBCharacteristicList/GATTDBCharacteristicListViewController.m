@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -58,7 +58,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+
     [self getcharcteristicsForService:[[CyCBManager sharedManager] myService]];
 }
 
@@ -87,17 +87,17 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     CharacteristicListTableViewCell *currentCell=[tableView dequeueReusableCellWithIdentifier:CHARACTERISTIC_CELL_IDENTIFIER];
-    
+
     if (currentCell == nil)
     {
         currentCell = [[CharacteristicListTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CHARACTERISTIC_CELL_IDENTIFIER];
     }
-    
+
     /* Display characteristic name and properties  */
     CBCharacteristic *characteristic = [characteristicArray objectAtIndex:[indexPath row]];
     NSString *characteristicName = [ResourceHandler getCharacteristicNameForUUID:characteristic.UUID];
     [currentCell setCharacteristicName:characteristicName andProperties:[self getPropertiesForCharacteristic:characteristic]];
-    
+
     return currentCell;
 }
 
@@ -115,11 +115,8 @@
 
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    /*  set cell background */
-    UIImageView *cellBGImageView=[[UIImageView alloc]initWithFrame:cell.bounds];
-    [cellBGImageView setImage:[UIImage imageNamed:CELL_BG_IMAGE]];
-    cell.backgroundView=cellBGImageView;
-    
+    [cell viewWithTag:42].layer.borderColor = COLOR_PRIMARY.CGColor;
+    [cell viewWithTag:42].layer.borderWidth = 1;
 }
 
 #pragma mark - TableView Delegates
@@ -135,7 +132,7 @@
 {
     [[CyCBManager sharedManager] setMyCharacteristic:[characteristicArray objectAtIndex:[indexPath row]]];
     [[CyCBManager sharedManager] setCharacteristicProperties:[self getPropertiesForCharacteristic:[characteristicArray objectAtIndex:[indexPath row]]]];
-    
+
     [self performSegueWithIdentifier:CHARACTERISTIC_SEGUE sender:self];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
@@ -160,9 +157,9 @@
  *
  */
 -(NSMutableArray *) getPropertiesForCharacteristic:(CBCharacteristic *)characteristic {
-    
+
     NSMutableArray *propertyList = [NSMutableArray array];
-    
+
     if ((characteristic.properties & CBCharacteristicPropertyRead) != 0) {
         [propertyList addObject:READ];
     }
@@ -175,7 +172,7 @@
     if ((characteristic.properties & CBCharacteristicPropertyIndicate) != 0) {
        [propertyList addObject:INDICATE];;
     }
-    
+
     return propertyList;
 }
 

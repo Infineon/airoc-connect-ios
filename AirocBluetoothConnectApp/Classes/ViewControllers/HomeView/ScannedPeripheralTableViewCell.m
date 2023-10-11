@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -68,14 +68,14 @@
 -(NSString *)nameForPeripheral:(CBPeripheralExt *)ble
 {
     NSString *bleName ;
-    
+
     if ([ble.mAdvertisementData valueForKey:CBAdvertisementDataLocalNameKey] != nil)
     {
         bleName = [ble.mAdvertisementData valueForKey:CBAdvertisementDataLocalNameKey];
     }
-    
+
     // If the peripheral name is not found in advertisement data, then check whether it is there in peripheral object. If it's not found then assign it as unknown peripheral
-    
+
     if(bleName.length < 1 )
     {
         if (ble.mPeripheral.name.length > 0) {
@@ -84,7 +84,7 @@
         else
             bleName = LOCALIZEDSTRING(@"unknownPeripheral");
     }
-    
+
     return bleName;
 }
 
@@ -97,13 +97,13 @@
  */
 -(NSString *)UUIDStringfromPeripheral:(CBPeripheralExt *)ble
 {
-    
+
     NSString *bleUUID = ble.mPeripheral.identifier.UUIDString;
     if(bleUUID.length < 1 )
         bleUUID = @"Nil";
     else
         bleUUID = [NSString stringWithFormat:@"UUID: %@",bleUUID];
-    
+
     return bleUUID;
 }
 
@@ -121,7 +121,7 @@
         bleService = LOCALIZEDSTRING(@"noServices");
     else
         bleService = [NSString stringWithFormat:@" %ld Service Advertised ",(long)serviceCount];
-    
+
     return bleService;
 }
 
@@ -134,13 +134,13 @@
 -(NSString *)RSSIValueForPeripheral:(CBPeripheralExt *)ble
 {
     NSString *deviceRSSI = [ble.mRSSI stringValue];
-    
+
     if ([deviceRSSI intValue] >= RSSI_UNDEFINED_VALUE) {
         deviceRSSI = LOCALIZEDSTRING(@"undefined");
     } else {
         deviceRSSI=[NSString stringWithFormat:@"%@ dBm",deviceRSSI];
     }
-    
+
     return deviceRSSI;
 }
 

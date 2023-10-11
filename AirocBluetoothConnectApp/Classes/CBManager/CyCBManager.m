@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -50,7 +50,7 @@
 {
     CBCentralManager *centralManager;
     NSMutableArray *peripheralArray;
-    
+
     void (^cbCommunicationHandler)(BOOL success, NSError *error);
     BOOL isTimeOutAlert;
 }
@@ -143,7 +143,7 @@
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
     CBPeripheralExt *peripheralExt = nil;
     const NSUInteger index = [peripheralArray indexOfObject:peripheral];
-    
+
     if (index != NSNotFound) {
         peripheralExt = foundPeripherals[index];
     } else {
@@ -151,7 +151,7 @@
             peripheralExt = [[CBPeripheralExt alloc] init];
         }
     }
-    
+
     if (peripheralExt != nil) {
         peripheralExt.mPeripheral = [peripheral copy];
         peripheralExt.mAdvertisementData = [advertisementData copy];
@@ -191,7 +191,7 @@
     [self cancelTimeOutAlert];
     [self disconnectPeripheral:myPeripheral];
     NSMutableDictionary *errorDetail = [NSMutableDictionary dictionary];
-    [errorDetail setValue:LOCALIZEDSTRING(@"connectionTimeOutAlert") forKey:NSLocalizedDescriptionKey];
+    [errorDetail setValue:LOCALIZEDSTRING(@"cannotConnectAlert") forKey:NSLocalizedDescriptionKey];
     NSError *error = [NSError errorWithDomain:MY_DOMAIN code:100 userInfo:errorDetail];
     [self refreshPeripheralsPreservingPeripheralList];
     cbCommunicationHandler(NO,error);
@@ -208,7 +208,7 @@
     if((NSInteger)[centralManager state] == CBManagerStatePoweredOn)
     {
         cbCommunicationHandler = completionHandler ;
-        
+
         if ([peripheral state] == CBPeripheralStateDisconnected)
         {
             [centralManager connectPeripheral:peripheral options:nil];
@@ -218,7 +218,7 @@
         {
             [centralManager cancelPeripheralConnection:peripheral];
         }
-        
+
         [self performSelector:@selector(timeOutMethodForConnect) withObject:nil afterDelay:DEVICE_CONNECTION_TIMEOUT];
     }
 }
@@ -249,7 +249,7 @@
     myPeripheral = [peripheral copy];
     myPeripheral.delegate = self ;
     [myPeripheral discoverServices:nil];
-    
+
     [[LoggerHandler logManager] addLogData:[NSString stringWithFormat:@"[%@] %@", peripheral.name, CONNECTION_ESTABLISH]];
     [[LoggerHandler logManager] addLogData:[NSString stringWithFormat:@"[%@] %@", peripheral.name, SERVICE_DISCOVERY_REQUEST]];
 }
@@ -275,44 +275,43 @@
 - (void) centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error
 {
     [self cancelTimeOutAlert];
-    
+
     NSUInteger index = [peripheralArray indexOfObject:peripheral];
     if (index != NSNotFound) {
         // CONFIGURATORS-2444
         CBPeripheralExt *peripheralExt = foundPeripherals[index];
         peripheralExt.mRSSI = @RSSI_UNDEFINED_VALUE;
     }
-    
+
     /*  Check whether the disconnection is done by the device */
-    if (error == nil && !isTimeOutAlert)
+    if (!isTimeOutAlert)
     {
-        NSMutableDictionary *errorDetail = [NSMutableDictionary dictionary];
-        [errorDetail setValue:LOCALIZEDSTRING(@"deviceDisconnectedAlert") forKey:NSLocalizedDescriptionKey];
-        NSError *disconnectError = [NSError errorWithDomain:MY_DOMAIN code:100 userInfo:errorDetail];
-        [[LoggerHandler logManager] addLogData:[NSString stringWithFormat:@"[%@] %@",peripheral.name,DISCONNECTION_REQUEST]];
-        
-        cbCommunicationHandler(NO,disconnectError);
-    }
-    else
-    {
-        isTimeOutAlert = NO;
-        
         // Checking whether the disconnected device has pending firmware upgrade
         if ([[CyCBManager sharedManager] bootloaderFileArray] != nil && error != nil)
         {
             NSMutableDictionary *errorDict = [NSMutableDictionary dictionary];
             [errorDict setValue:[NSString stringWithFormat:@"%@%@",[error.userInfo objectForKey:NSLocalizedDescriptionKey],LOCALIZEDSTRING(@"firmwareUpgradePendingMessage")] forKey:NSLocalizedDescriptionKey];
-            
+
             NSError *disconnectionError = [NSError errorWithDomain:MY_DOMAIN code:100 userInfo:errorDict];
             cbCommunicationHandler(NO,disconnectionError);
+        } else {
+            NSMutableDictionary *errorDetail = [NSMutableDictionary dictionary];
+            [errorDetail setValue:LOCALIZEDSTRING(@"deviceDisconnectedAlert") forKey:NSLocalizedDescriptionKey];
+            NSError *disconnectError = [NSError errorWithDomain:MY_DOMAIN code:100 userInfo:errorDetail];
+            [[LoggerHandler logManager] addLogData:[NSString stringWithFormat:@"[%@] %@",peripheral.name,DISCONNECTION_REQUEST]];
+            
+            cbCommunicationHandler(NO,disconnectError);
         }
-        else
-            cbCommunicationHandler(NO,error);
     }
-    
+    else
+    {
+        isTimeOutAlert = NO;
+        cbCommunicationHandler(NO,error);
+    }
+
     [self redirectToRootViewController];
     [[LoggerHandler logManager] addLogData:[NSString stringWithFormat:@"[%@] %@",peripheral.name,DISCONNECTED]];
-    
+
     // CONFIGURATORS-2444
     // [self clearDevices];
     [self clearServices];
@@ -327,14 +326,22 @@
  */
 -(void)redirectToRootViewController
 {
+    NSArray *viewControllersArray;
+    UINavigationController *navigationController;
     if(cbDiscoveryDelegate)
     {
-        [[(UIViewController*)cbDiscoveryDelegate navigationController] popToRootViewControllerAnimated:YES];
+        navigationController = [(UIViewController*)cbDiscoveryDelegate navigationController];
     }
     else if(cbCharacteristicDelegate)
     {
-        [[(UIViewController*)cbCharacteristicDelegate navigationController] popToRootViewControllerAnimated:YES];
+        navigationController = [(UIViewController*)cbCharacteristicDelegate navigationController];
     }
+    
+    viewControllersArray = [navigationController viewControllers];
+    for (UIViewController *viewController in viewControllersArray) {
+        [viewController dismissViewControllerAnimated:YES completion:nil];
+    }
+    [navigationController popToRootViewControllerAnimated:YES];
 }
 
 #pragma mark - Service Discovery
@@ -372,7 +379,7 @@
     else
     {
         [[LoggerHandler logManager] addLogData:[NSString stringWithFormat:@"[%@] %@- %@%@]",peripheral.name,SERVICE_DISCOVERY_STATUS,SERVICE_DISCOVERY_ERROR,[error.userInfo objectForKey:NSLocalizedDescriptionKey]]];
-        
+
         cbCommunicationHandler(NO,error);
     }
 }
@@ -408,7 +415,7 @@
             [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@- %@%@",READ_RESPONSE,READ_ERROR,[error.userInfo objectForKey:NSLocalizedDescriptionKey]]];
         }
     }
-    
+
     if([cbCharacteristicDelegate respondsToSelector:@selector(peripheral:didUpdateValueForCharacteristic:error:)])
     {
         [cbCharacteristicDelegate peripheral:peripheral didUpdateValueForCharacteristic:characteristic error:error];
@@ -445,7 +452,7 @@
 {
     if (error)
     {
-        [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:descriptor.characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:descriptor.characteristic.UUID] descriptor:[Utilities getDiscriptorNameForUUID:descriptor.UUID] operation:[NSString stringWithFormat:@"%@- %@%@",READ_RESPONSE,READ_ERROR,[error.userInfo objectForKey:NSLocalizedDescriptionKey]]];
+        [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:descriptor.characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:descriptor.characteristic.UUID] descriptor:[Utilities getDescriptorNameForUUID:descriptor.UUID] operation:[NSString stringWithFormat:@"%@- %@%@",READ_RESPONSE,READ_ERROR,[error.userInfo objectForKey:NSLocalizedDescriptionKey]]];
     }
     [cbCharacteristicDelegate peripheral:peripheral didUpdateValueForDescriptor:descriptor error:error];
 }
@@ -500,28 +507,28 @@
             [cbDiscoveryDelegate bluetoothStateUpdatedToState:NO];
             break;
         }
-            
+
         case CBManagerStateUnauthorized:
         {
             /* Tell user the app is not allowed. */
             [[UIAlertController alertWithTitle:APP_NAME message:LOCALIZEDSTRING(@"appNotAuthorizedAlert")] presentInParent:nil];
             break;
         }
-            
+
         case CBManagerStateUnknown:
         {
             /* Bad news, let's wait for another event. */
             [[UIAlertController alertWithTitle:APP_NAME message:LOCALIZEDSTRING(@"stateUnknownAlert" )] presentInParent:nil];
             break;
         }
-            
+
         case CBManagerStatePoweredOn:
         {
             [cbDiscoveryDelegate bluetoothStateUpdatedToState:YES];
             [self startScanning];
             break;
         }
-            
+
         case CBManagerStateResetting:
         {
             [self clearPeripherals];

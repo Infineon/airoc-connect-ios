@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -64,21 +64,21 @@
     IBOutlet UILabel *characteristicNameLabel;
     IBOutlet UILabel *descriptorHexValueLabel;
     IBOutlet UILabel *descriptorValueLabel;
-    
+
     //Layout Constraint variables to control read/notify buttons
     IBOutlet NSLayoutConstraint *readButtonCenterXConstraint;
     IBOutlet NSLayoutConstraint *notifyButtonCenterXConstraint;
     IBOutlet NSLayoutConstraint *indicateButtonCenterXconstraint;
-    
+
     IBOutlet NSLayoutConstraint *readButtonWidthConstraint;
     IBOutlet NSLayoutConstraint *notifyButtonWidthConstraint;
     IBOutlet NSLayoutConstraint *indicateButtonWidthconstraint;
-    
+
     //UIButton Outlets
     IBOutlet UIButton *readButton;
     IBOutlet UIButton *notifyButton;
     IBOutlet UIButton *indicateButton;
-    
+
     BOOL isViewInitiated;
 }
 
@@ -89,14 +89,19 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [[CyCBManager sharedManager] setCbCharacteristicDelegate:self];
-    
+
     if (self.descriptor)
     {
         /* Updating datafields */
-        descriptorNameLabel.text = [Utilities getDiscriptorNameForUUID:self.descriptor.UUID];
+        // Display Descriptor name or Descriptor UUID if Descriptor don't have any name. 
+        if([Utilities getDescriptorNameForUUID:self.descriptor.UUID] != nil){
+            descriptorNameLabel.text = [Utilities getDescriptorNameForUUID:self.descriptor.UUID];
+        } else {
+            descriptorNameLabel.text = [[self.descriptor.UUID UUIDString] lowercaseString];
+        }
         characteristicNameLabel.text = self.characteristicName;
     }
-    
+
     [self readBtnClicked:nil];
     [notifyButton setHidden:YES];
     [indicateButton setHidden:YES];
@@ -170,7 +175,7 @@
         indicateButtonWidthconstraint.constant = self.view.frame.size.width/3 - 5;
         notifyButtonWidthConstraint.constant = self.view.frame.size.width/3 - 5;
         [self.view layoutIfNeeded];
-        
+
         readButtonCenterXConstraint.constant = indicateButton.frame.size.width + 5;
         notifyButtonCenterXConstraint.constant = -(indicateButton.frame.size.width + 5);
     }
@@ -210,6 +215,10 @@
 -(IBAction)notifyBtnClicked:(UIButton *)sender
 {
     if (!sender.selected) {
+        /*Indicate and notify buttons should be mutually exclusive. If Notify button was selected, Indicate should be turned off*/
+        if (indicateButton.selected)
+            [self indicateButtonClicked:indicateButton];
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:[[CyCBManager sharedManager] myCharacteristic]];
         [self logOperation:[NSString stringWithFormat:@"%@%@ [01 00]",WRITE_REQUEST,DATA_SEPERATOR] andData:nil];
         [self logButtonAction:START_NOTIFY];
@@ -219,9 +228,9 @@
         [self logOperation:[NSString stringWithFormat:@"%@%@ [00 00]",WRITE_REQUEST,DATA_SEPERATOR] andData:nil];
         [self logButtonAction:STOP_NOTIFY];
     }
-    
+
     [sender setSelected:sender.selected ? NO : YES];
-    
+
     // Read value after setting notify
     [self readBtnClicked:nil];
 }
@@ -229,6 +238,10 @@
 - (IBAction)indicateButtonClicked:(UIButton *)sender
 {
     if (!sender.selected) {
+        /*Indicate and notify buttons should be mutually exclusive. If Indicate button was selected, Notify should be turned off*/
+        if (notifyButton.selected)
+            [self notifyBtnClicked:notifyButton];
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:[[CyCBManager sharedManager] myCharacteristic]];
         [self logOperation:[NSString stringWithFormat:@"%@%@ [02 00]",WRITE_REQUEST,DATA_SEPERATOR] andData:nil];
         [self logButtonAction:START_INDICATE];
@@ -238,9 +251,9 @@
         [self logOperation:[NSString stringWithFormat:@"%@%@ [00 00]",WRITE_REQUEST,DATA_SEPERATOR] andData:nil];
         [self logButtonAction:STOP_INDICATE];
     }
-    
+
     [sender setSelected:sender.selected ? NO : YES];
-    
+
     // Read value after setting notify
     [self readBtnClicked:nil];
 }
@@ -268,10 +281,10 @@
             // For CBUUIDCharacteristicUserDescriptionString descriptor.value is of type NSString*
             NSString *descriptorValueString = [NSString stringWithFormat:@"%@", descriptor.value];
             NSData *data = [descriptorValueString dataUsingEncoding:NSUTF8StringEncoding];
-            
+
             descriptorHexValueLabel.text = [NSString stringWithFormat:@"%@", [data hexString]];
             descriptorValueLabel.text = descriptor.value;
-            
+
             [self logOperation:READ_RESPONSE andData:data];
         }
         else
@@ -279,16 +292,16 @@
             // For CBUUIDClientCharacteristicConfigurationString, CBUUIDServerCharacteristicConfigurationString descriptor.value is of type NSNumber*
             // For CBUUIDCharacteristicAggregateFormatString descriptor.value is of type NSString*
             descriptorHexValueLabel.text = [NSString stringWithFormat:@"%@", descriptor.value];
-            
+
             NSString * descriptorValueInfo = [Utilities getDescriptorValueInformation:descriptor.UUID andValue:[NSNumber numberWithInteger:[descriptorHexValueLabel.text integerValue]]];
             descriptorValueLabel.text = descriptorValueInfo;
-            
+
             if (!isViewInitiated)
             {
                 [self initiateViewWithDescriptorValue:(int)[descriptorHexValueLabel.text integerValue]];
                 isViewInitiated = YES;
             }
-            
+
             if (descriptorHexValueLabel.text.length == 1)
             {
                 [self logOperation:[NSString stringWithFormat:@"%@%@ [0%@ 00]", READ_RESPONSE, DATA_SEPERATOR, descriptorHexValueLabel.text] andData:nil];
@@ -310,20 +323,20 @@
 {
     // For CBUUIDCharacteristicFormatString descriptor.value is of type NSData*
     descriptorHexValueLabel.text = [descriptor.value hexString];
-    
+
     const uint8_t *bytes = [descriptor.value bytes];
     NSUInteger offset = 0;
-    
+
     int formatValue = bytes[offset];
-    
+
     offset++;
     uint8_t exponentValue = bytes[offset];
-    
+
     // Finding unit value
     offset++;
     uint16_t unitValue = 0;
     unitValue = CFSwapInt16LittleToHost(*(uint16_t *)&bytes[offset]);
-    
+
     // Finding the name space value
     offset = offset + 2;
     uint8_t namespaceValue = bytes[offset];
@@ -340,13 +353,13 @@
     {
         nameSpace = RESERVED_FOR_FUTURE_USE;
     }
-    
+
     // Finding the description value
     offset++;
     uint16_t descriptionValue;
     descriptionValue = CFSwapInt16LittleToHost(*(uint16_t *)&bytes[offset]);
-    
-    NSString *descriptorValueInfo = [NSString stringWithFormat:@"Format = %@ \nExponent = %d\nUnit = %d \nNamespace = %@ \nDescription =%d", [self getEnumerationForformatValue:formatValue], exponentValue, unitValue, nameSpace, descriptionValue];
+
+    NSString *descriptorValueInfo = [NSString stringWithFormat:@"Format = %@ \nExponent = %d\nUnit = %d \nNamespace = %@ \nDescription = %d", [self getEnumerationForformatValue:formatValue], exponentValue, unitValue, nameSpace, descriptionValue];
     descriptorValueLabel.text = descriptorValueInfo;
 }
 
@@ -360,7 +373,7 @@
 {
     NSDictionary *formatDictionary = [ResourceHandler getItemsFromPropertyList:FORMAT_PLIST];
     NSString *formatInfoString;
-    
+
     if (formatValue <= MAX_FORMAT_VALUE)
     {
         formatInfoString = [formatDictionary valueForKey:[NSString stringWithFormat:@"%d",formatValue]];
@@ -393,11 +406,11 @@
 {
     if (data != nil)
     {
-        [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:[[CyCBManager sharedManager] myService].UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:[[CyCBManager sharedManager] myCharacteristic].UUID] descriptor:[Utilities getDiscriptorNameForUUID:self.descriptor.UUID] operation:[NSString stringWithFormat:@"%@%@ %@",operation,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
+        [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:[[CyCBManager sharedManager] myService].UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:[[CyCBManager sharedManager] myCharacteristic].UUID] descriptor:[Utilities getDescriptorNameForUUID:self.descriptor.UUID] operation:[NSString stringWithFormat:@"%@%@ %@",operation,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
     }
     else
     {
-        [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:[[CyCBManager sharedManager] myService].UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:[[CyCBManager sharedManager] myCharacteristic].UUID] descriptor:[Utilities getDiscriptorNameForUUID:self.descriptor.UUID] operation:operation];
+        [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:[[CyCBManager sharedManager] myService].UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:[[CyCBManager sharedManager] myCharacteristic].UUID] descriptor:[Utilities getDescriptorNameForUUID:self.descriptor.UUID] operation:operation];
     }
 }
 

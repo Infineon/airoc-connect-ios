@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -129,7 +129,7 @@
         self.green = green;
         self.blue = blue;
         self.intensity = intensity;
-        
+
         uint8_t value[] = {red, green, blue, intensity}; //enter the value which you want to write.
         NSData *valueData = [NSData dataWithBytes:(void*)&value length:sizeof(value)];
         [[[CyCBManager sharedManager] myPeripheral] writeValue:valueData forCharacteristic:RGBCharacteristic type:CBCharacteristicWriteWithResponse];
@@ -174,12 +174,12 @@
         {
             NSData *valueData = [characteristic value];
             const uint8_t *valueBytes = [valueData bytes];
-            
+
             self.red = valueBytes[0];
             self.green = valueBytes[1];
             self.blue = valueBytes[2];
             self.intensity = valueBytes[3];
-            
+
             didUpdateValueForCharacteristicHandler(YES,nil);
         }
         else
@@ -211,7 +211,7 @@
         isWriteSuccess = YES ;
         didWriteValueForCharacteristicHandler(YES,error);
     }
-    
+
     [self logWriteStatusWithError:error];
 }
 

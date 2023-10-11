@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -58,7 +58,7 @@
     if (self) {
         self = [[[NSBundle mainBundle] loadNibNamed:ABOUT_VIEW_NIB_NAME owner:self options:nil] objectAtIndex:0];
         self.frame = frame;
-        
+
         NSString * version = [[NSBundle mainBundle] objectForInfoDictionaryKey:BUNDLE_VERSION_KEY];
         NSString * build = [[NSBundle mainBundle] objectForInfoDictionaryKey: (NSString *)kCFBundleVersionKey];
         appVersionLabel.text=[NSString stringWithFormat:@"%@ %@.%@",APP_NAME,version,build];
@@ -70,7 +70,7 @@
     // Check internet connectivity
     Reachability *networkReachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus connectionStatus = [networkReachability currentReachabilityStatus];
-    
+
     if (connectionStatus != NotReachable) {
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:CYPRESS_MOBILE_URL] options:@{} completionHandler:nil];
     } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -36,10 +36,10 @@
 @protocol MenuViewControllerDelegate <NSObject>
 
 -(void) showBLEDevices;
--(void) showCypressContactWebPage;
+-(void) showCompanyContactWebPage;
 -(void) showCypressBLEProductsWebPage;
--(void) showCypressHomePage;
--(void) showCypressMobilePage;
+-(void) showCompanyHomePage;
+-(void) showAppMobilePage;
 -(void) showAboutView;
 -(void) showLoggerView;
 
@@ -66,7 +66,7 @@
 /*!
  *  @property menuTableView
  *
- *  @discussion constraint that adjusts the menu view leading position 
+ *  @discussion constraint that adjusts the menu view leading position
  *
  */
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *rightMenuViewWidthConstraint;

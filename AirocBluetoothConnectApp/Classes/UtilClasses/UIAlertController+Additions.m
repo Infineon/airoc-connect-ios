@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -46,7 +46,7 @@
 @implementation UIAlertController (Additions)
 
 + (instancetype)alertWithTitle:(nullable NSString *)title message:(nullable NSString *)message {
-    
+
     return [UIAlertController alertWithTitle:title message:message delegate:nil cancelButtonTitle:OPT_OK otherButtonTitles:nil, nil];
 }
 
@@ -54,26 +54,26 @@
                        message:(nullable NSString *)message
                       delegate:(nullable id <AlertControllerDelegate>)delegate
              cancelButtonTitle:(nullable NSString *)cancelButtonTitle otherButtonTitles:(nullable NSString *) otherButtonTitles, ... NS_REQUIRES_NIL_TERMINATION {
-    
+
     va_list args;
     va_start(args, otherButtonTitles);
     UIAlertController *alert = [UIAlertController impl_alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert delegate:delegate cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:nil otherButtonTitles:otherButtonTitles args:args];
     va_end(args);
-    
+
     return alert;
 }
 
 + (instancetype)actionSheetWithTitle:(nullable NSString *)title sourceView:(UIView *)sourceView sourceRect:(CGRect)sourceRect delegate:(nullable id<AlertControllerDelegate>)delegate cancelButtonTitle:(nullable NSString *)cancelButtonTitle destructiveButtonTitle:(nullable NSString *)destructiveButtonTitle otherButtonTitles:(nullable NSString *)otherButtonTitles, ... NS_REQUIRES_NIL_TERMINATION {
-    
+
     va_list args;
     va_start(args, otherButtonTitles);
     UIAlertController *actionSheet = [UIAlertController impl_alertControllerWithTitle:title message:nil preferredStyle:UIAlertControllerStyleActionSheet delegate:delegate cancelButtonTitle:cancelButtonTitle destructiveButtonTitle:destructiveButtonTitle otherButtonTitles:otherButtonTitles args:args];
     va_end(args);
-    
+
     actionSheet.modalPresentationStyle = UIModalPresentationPopover;
     actionSheet.popoverPresentationController.sourceView = sourceView;
     actionSheet.popoverPresentationController.sourceRect = sourceRect;
-    
+
     return actionSheet;
 }
 
@@ -85,7 +85,7 @@
                        destructiveButtonTitle:(nullable NSString *)destructiveButtonTitle
                             otherButtonTitles:(nullable NSString *)otherButtonTitles
                                          args:(va_list)args {
-    
+
     UIAlertController *alertController = [UIAlertController
                                           alertControllerWithTitle:title
                                           message:message
@@ -93,34 +93,34 @@
     alertController.tag = TAG_UNDEFINED;
     alertController.delegate = delegate;
     alertController.buttonIndices = [[NSMutableDictionary alloc] init];
-    
+
     NSMutableArray *buttonTitles = [[NSMutableArray alloc] init];
     NSMutableArray *actionStyles = [[NSMutableArray alloc] init];
-    
+
     alertController.buttonIndices[NSStringFromSelector(@selector(cancelButtonIndex))] = [NSNumber numberWithInteger:cancelButtonTitle ? buttonTitles.count : -1];
     if (cancelButtonTitle) {
         [buttonTitles addObject:cancelButtonTitle];
         [actionStyles addObject:[NSNumber numberWithInteger:UIAlertActionStyleCancel]];
     }
-    
+
     alertController.buttonIndices[NSStringFromSelector(@selector(destructiveButtonIndex))] = [NSNumber numberWithInteger:destructiveButtonTitle ? buttonTitles.count : -1];
     if (destructiveButtonTitle) {
         [buttonTitles addObject:destructiveButtonTitle];
         [actionStyles addObject:[NSNumber numberWithInteger:UIAlertActionStyleDestructive]];
     }
-    
+
     alertController.buttonIndices[NSStringFromSelector(@selector(firstOtherButtonIndex))] = [NSNumber numberWithInteger:otherButtonTitles ? buttonTitles.count : -1];
     if (otherButtonTitles) {
         [buttonTitles addObject:otherButtonTitles];
         [actionStyles addObject:[NSNumber numberWithInteger:UIAlertActionStyleDefault]];
-        
+
         NSString *arg = nil;
         while ((arg = va_arg(args, NSString *))) {
             [buttonTitles addObject:arg];
             [actionStyles addObject:[NSNumber numberWithInteger:UIAlertActionStyleDefault]];
         }
     }
-    
+
     __weak UIAlertController *wAlertController = alertController;
     __weak id<AlertControllerDelegate> wDelegate = delegate;
     for (NSUInteger i = 0; i < buttonTitles.count; ++i) {
@@ -137,12 +137,12 @@
         })];
         [alertController addAction:action];
     }
-    
+
     return alertController;
 }
 
 - (instancetype)addOtherButtonWithTitle:(NSString *)otherButtonTitle {
-    
+
     NSUInteger actionCount = self.actions.count;
     if (self.firstOtherButtonIndex < 0) {
         self.buttonIndices[NSStringFromSelector(@selector(firstOtherButtonIndex))] = [NSNumber numberWithInteger:actionCount];
@@ -160,7 +160,7 @@
         }
     })];
     [self addAction:action];
-    
+
     return self;
 }
 

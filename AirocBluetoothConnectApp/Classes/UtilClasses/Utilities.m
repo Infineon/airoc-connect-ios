@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -67,10 +67,10 @@
  */
 +(NSString *)getTodayDateString {
     NSDate *today = [NSDate date];
-    
+
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:DATE_FORMAT];
-    
+
     NSString *dateString = [dateFormatter stringFromDate:today];
     return dateString;
 }
@@ -83,10 +83,10 @@
  */
 +(NSString *)getTodayTimeString {
     NSDate *today = [NSDate date];
-    
+
     NSDateFormatter *timeFormatter = [[NSDateFormatter alloc] init];
     [timeFormatter setDateFormat:TIME_FORMAT];
-    
+
     NSString *timeString = [timeFormatter stringFromDate:today];
     return timeString;
 }
@@ -136,7 +136,7 @@
  *  @discussion Method that returns descriptor name for given UUID
  *
  */
-+(NSString *)getDiscriptorNameForUUID:(CBUUID *)UUID
++(NSString *)getDescriptorNameForUUID:(CBUUID *)UUID
 {
     NSString * descriptorName;
     if ([UUID isEqual:DESCRIPTOR_CHARACTERISTIC_EXTENDED_PROPERTY_UUID]) {
@@ -178,40 +178,17 @@
 {
     NSString * descriptorValueInformation;
     if ([UUID isEqual:DESCRIPTOR_CHARACTERISTIC_EXTENDED_PROPERTY_UUID]) {
-        
-        switch ([value integerValue]){
-            case 0:
-                descriptorValueInformation = [NSString stringWithFormat:@"%@ \n%@",RELIABLE_WRITE_DISABLED,WRITABLE_AUXILARIES_DISABLED];
-                break;
-            case 1:
-                descriptorValueInformation = RELIABLE_WRITE_ENABLED;
-                break;
-            case 2:
-                descriptorValueInformation = WRITABLE_AUXILARIES_ENABLED;
-                break;
-                
-            default:
-                break;
-        }
-        
+        // Check 01 and 10 bits
+        NSString* writeState = [value integerValue] & 0x01 ? RELIABLE_WRITE_ENABLED : RELIABLE_WRITE_DISABLED;
+        NSString* auxState = [value integerValue] & 0x02 ? WRITABLE_AUXILARIES_ENABLED : WRITABLE_AUXILARIES_DISABLED;
+        descriptorValueInformation = [NSString stringWithFormat:@"%@ \n%@", writeState, auxState];
     }else if ([UUID isEqual:DESCRIPTOR_CHARACTERISTIC_USER_DESCRIPTION_UUID]) {
         descriptorValueInformation = @"";
     }else if ([UUID isEqual:DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIG_UUID]){
-        
-        switch ([value integerValue]){
-            case 0:
-                descriptorValueInformation =[NSString stringWithFormat:@"%@ \n%@",INDICATE_DISABLED,NOTIFY_DISABLED];
-                break;
-            case 1:
-                descriptorValueInformation = NOTIFY_ENABLED;
-                break;
-            case 2:
-                descriptorValueInformation = INDICATE_ENABLED;
-                break;
-                
-            default:
-                break;
-        }
+        // Check 01 and 10 bits
+        NSString* notifyState = [value integerValue] & 0x01 ? NOTIFY_ENABLED : NOTIFY_DISABLED;
+        NSString* indicateState = [value integerValue] & 0x02 ? INDICATE_ENABLED : INDICATE_DISABLED;
+        descriptorValueInformation = [NSString stringWithFormat:@"%@ \n%@", notifyState, indicateState];
     }else if ([UUID isEqual:DESCRIPTOR_SERVER_CHARACTERISTIC_CONFIG_UUID]) {
         descriptorValueInformation = value ? BROADCAST_ENABLED : BOADCAST_DISABLED;
     }else if ([UUID isEqual:DESCRIPTOR_CHARACTERISTIC_PRESENTATION_FORMAT_UUID]) {
@@ -255,15 +232,15 @@
     string = [string stringByReplacingOccurrencesOfString:@" " withString:@""];//Removing spaces
     string = [string lowercaseString];//Lowercase
     NSCharacterSet *illegalSymbols = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdef"] invertedSet];
-    
+
     // Check whether the string is a valid hex string, otherwise return empty data
     if ([string rangeOfCharacterFromSet:illegalSymbols].location == NSNotFound) {
         // Pad to complete bytes
         string = [string paddedHexStringLSB:isLSB];
-        
+
         unsigned char wholeByte;
         char byteChars[3] = {'\0','\0','\0'};
-        
+
         if (isLSB) {
             for (int i = 0, n = (int)string.length; i < n - 1; i += 2) {
                 byteChars[0] = [string characterAtIndex:i];
@@ -292,12 +269,12 @@
 +(NSString *)ASCIIStringFromData:(NSData *)data
 {
     NSMutableString *string = [NSMutableString stringWithString:@""];
-    
+
     for (int i = 0; i < data.length; i++)
     {
         unsigned char byte;
         [data getBytes:&byte range:NSMakeRange(i, 1)];
-        
+
         if (byte >= 32 && byte < 127)
         {
             [string appendFormat:@"%c", byte];
@@ -319,12 +296,12 @@
         UIGraphicsBeginImageContextWithOptions([UIApplication sharedApplication].keyWindow.bounds.size, NO, [UIScreen mainScreen].scale);
     else
         UIGraphicsBeginImageContext([UIApplication sharedApplication].keyWindow.bounds.size);
-    
+
     UIGraphicsBeginImageContext([UIApplication sharedApplication].keyWindow.bounds.size);
     [[UIApplication sharedApplication].keyWindow.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    
+
     return image;
 }
 
@@ -339,21 +316,8 @@
     unsigned int integerValue;
     NSScanner* scanner = [NSScanner scannerWithString:hexString];
     [scanner scanHexInt:&integerValue];
-    
+
     return integerValue;
-}
-
-/*!
- *  @method get128BitUUIDForUUID:
- *
- *  @discussion Method that returns the 128 bit UUID
- *
- */
-
-+(NSString *)get128BitUUIDForUUID:(CBUUID *)UUID
-{
-    NSString *uuidString = [NSString stringWithFormat:@"0000%@-0000-1000-8000-00805F9B34FB",UUID.UUIDString];
-    return [uuidString lowercaseString];
 }
 
 /*!
@@ -367,7 +331,7 @@
 {
     NSString *dataString = [data hexString];
     NSString *tempString = @"";
-    
+
     if (dataString.length != 0)
     {
         int i = 0;
@@ -381,11 +345,11 @@
                 tempString = [tempString stringByAppendingString:[NSString stringWithFormat:@"%c",[dataString characterAtIndex:i]]];
         }
         tempString = [tempString stringByAppendingString:[NSString stringWithFormat:@"%c",[dataString characterAtIndex:i]]];
-        
+
     }
     else
         tempString = @" ";
-    
+
     NSString *logString = [NSString stringWithFormat:@"[%@]",tempString];
     return logString;
 }
@@ -418,15 +382,15 @@
  */
 
 +(float) convertSFLOATFromData:(int16_t)tempData{
-    
+
     int16_t exponent = (tempData & 0xF000) >> 12;
     int16_t mantissa = (int16_t)(tempData & 0x0FFF);
-    
+
     if (mantissa >= 0x0800)
         mantissa = -(0x1000 - mantissa);
     if (exponent >= 0x08)
         exponent = -(0x10 - exponent);
-    
+
     float tempValue = (float)(mantissa*pow(10, exponent));
     return tempValue;
 }
@@ -490,7 +454,7 @@
         (uint32_t)g0,       (uint32_t)(g0^g3),      (uint32_t)(g0^g2),      (uint32_t)(g0^g2^g3),
         (uint32_t)(g0^g1),  (uint32_t)(g0^g1^g3),   (uint32_t)(g0^g1^g2),   (uint32_t)(g0^g1^g2^g3),
     };
-    
+
     uint8_t* data = (uint8_t*)buf;
     uint32_t crc = 0xFFFFFFFF;
     while (size != 0)
@@ -505,6 +469,29 @@
         }
     }
     return ~crc;
+}
+
+/*!
+ * @method sortDates: withNewestFirst
+ *
+ * @discussion Sorts the array with dates
+ *
+ */
++(NSArray *) sortDates:(NSArray *)inputArray withNewestFirst:(BOOL)isNewestFirst; {
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    dateFormatter.dateFormat = DATE_FORMAT;
+    
+    NSArray *result = [inputArray sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        // Convert objects to strings
+        NSString* name1 = (NSString*)obj1;
+        NSString* name2 = (NSString*)obj2;
+        // Then to dates
+        NSDate *date1 = [dateFormatter dateFromString:name1];
+        NSDate *date2 = [dateFormatter dateFromString:name2];
+        // And compare the dates
+        return isNewestFirst ? [date2 compare:date1] : [date1 compare:date2];
+    }];
+    return result;
 }
 
 @end

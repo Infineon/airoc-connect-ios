@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -67,6 +67,7 @@
     __weak IBOutlet UIButton *upgradeButton;
     __weak IBOutlet UISwitch *securityKeySwitch;
     __weak IBOutlet UITextField *securityKeyTextField;
+    __weak IBOutlet UIView *securityKeyView;
     __weak IBOutlet UIView *activeAppView;
     __weak IBOutlet NSLayoutConstraint *activeAppViewHeightConstraint;
     __weak IBOutlet UIButton *activeAppButton;
@@ -117,7 +118,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [[super navBarTitleLabel] setText:FIRMWARE_UPGRADE];
-    
+
     isFileSearchFinished = NO;
     stackFileSelected = NO;
     selectedFileList = [NSMutableArray new];
@@ -133,7 +134,7 @@
     UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:BACK_BUTTON_IMAGE] landscapeImagePhone:[UIImage imageNamed:BACK_BUTTON_IMAGE] style:UIBarButtonItemStyleDone target:self action:@selector(backButtonAction)];
     self.navigationItem.leftBarButtonItem = backButton;
     self.navigationItem.leftBarButtonItem.imageInsets = UIEdgeInsetsMake(0, -8, 0, 0);
-    
+
     //UIKeyboardDidHideNotification when keyboard is fully hidden
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onKeyboardHide:) name:UIKeyboardDidHideNotification object:nil];
 }
@@ -160,6 +161,7 @@
         activeAppView.hidden = YES;
         activeAppViewHeightConstraint.constant = 0;
     }
+    [self setStateOfUpgradeOptionsControls:false];
     fileListTable.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
     if (_upgradeMode == app_stack_separate) {
         headerLabel.text = LOCALIZEDSTRING(@"selectStackfile");
@@ -215,7 +217,7 @@
  */
 - (IBAction)activeAppButtonAction:(id)sender {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:@"Set active application:" preferredStyle:UIAlertControllerStyleAlert];
-    
+
     UIAlertAction *noChange = [UIAlertAction actionWithTitle:NO_CHANGE style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
         [self setActiveApp:NoChange];
     }];
@@ -227,12 +229,12 @@
     }];
     UIAlertAction *cancel = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
     }];
-    
+
     [alert addAction:noChange];
     [alert addAction:image1];
     [alert addAction:image2];
     [alert addAction:cancel];
-    
+
     [self presentViewController:alert animated:YES completion:nil];
 }
 
@@ -288,12 +290,12 @@
 - (IBAction)checkBoxButtonClicked:(UIButton *)sender {
     CGPoint buttonPosition = [sender convertPoint:CGPointZero toView:fileListTable];
     NSIndexPath *indexPath = [fileListTable indexPathForRowAtPoint:buttonPosition];
-    
+
     if (isFileSearchFinished && fileList.count > 0) {
         if (!selectedFileList) {
             selectedFileList = [NSMutableArray new];
         }
-        
+
         if(sender.selected) {
             if ([fileListTable cellForRowAtIndexPath:indexPath].tag == selectedFileList.count) {
                 [selectedFileList removeObjectAtIndex:[fileListTable cellForRowAtIndexPath:indexPath].tag-1];
@@ -303,22 +305,22 @@
             [fileListTable reloadData];
         } else {
             if (_upgradeMode == app_stack_separate && [upgradeButton.titleLabel.text isEqualToString:UPGRADE_BTN_TITLE_UPGRADE] && selectedFileList.count == 2) {
-                
+
                 [selectedFileList removeObjectAtIndex:1];
             } else if ((selectedFileList.count == 1 && _upgradeMode != app_stack_separate) || (_upgradeMode == app_stack_separate  && [upgradeButton.titleLabel.text isEqualToString:UPGRADE_BTN_TITLE_NEXT] && selectedFileList.count == 1)) {
-                
+
                 [selectedFileList removeObjectAtIndex:0];
             }
             if (selectedFileList.count < 2) {
                 if((_upgradeMode == app_stack_separate && stackFileSelected) || (selectedFileList.count == 0)) {
-                    
+
                     [fileListTable cellForRowAtIndexPath:indexPath].tag = selectedFileList.count;
                     [selectedFileList addObject:[fileList objectAtIndex:indexPath.row]];
                 }
             }
             [fileListTable reloadData];
         }
-        
+
         BOOL enabled = NO;
         if (_upgradeMode == app_stack_separate) {
             enabled = stackFileSelected // application file screen
@@ -334,9 +336,18 @@
             NSString *fileName = [fileDict valueForKey:FILE_NAME];
             enabled = [[fileName pathExtension] caseInsensitiveCompare:@"cyacd"] == NSOrderedSame; // cyacd application file
         }
-        [self setSecurityKeySectionEnabled:enabled];
-        [self setActiveAppSectionEnabled:(enabled && _upgradeMode != app_stack_combined)];
+        [self setStateOfUpgradeOptionsControls:enabled];
     }
+}
+
+/*!
+ *  @method setSecurityKeySectionEnabled:
+ *
+ *  @discussion Delegate views states to setSecurityKeySectionEnabled and setActiveAppSectionEnabled
+*/
+-(void) setStateOfUpgradeOptionsControls:(BOOL)enabled {
+    [self setSecurityKeySectionEnabled:enabled];
+    [self setActiveAppSectionEnabled:(enabled && _upgradeMode != app_stack_combined)];
 }
 
 /*!
@@ -348,7 +359,8 @@
  *
  */
 - (void) setSecurityKeySectionEnabled:(BOOL)enabled {
-    [securityKeySwitch setEnabled:enabled];
+    securityKeyView.alpha = enabled ? 1.0f : 0.3f;
+    securityKeyView.userInteractionEnabled = enabled;
     if (!enabled) {
         [securityKeySwitch setOn:NO];
         // Explicitly invoking the handler for the securityKeySwitch as it is not being invoked automatically here
@@ -365,7 +377,8 @@
  *
  */
 - (void) setActiveAppSectionEnabled:(BOOL)enabled {
-    [activeAppButton setEnabled:enabled];
+    activeAppView.alpha = enabled ? 1.0f : 0.3f;
+    activeAppView.userInteractionEnabled = enabled;
 }
 
 /*!
@@ -402,16 +415,16 @@
 - (void)findFirmwareFilesWithCompletionBlock:(void(^)(NSArray *))onComplete
 {
     NSMutableArray *fileList = [NSMutableArray new];
-    
+
     NSArray *documentPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirPath = [documentPaths objectAtIndex:0];
-    
+
     NSFileManager *fm = [NSFileManager defaultManager];
     NSArray *dirContents = [fm contentsOfDirectoryAtPath:documentsDirPath error:nil];
-    
+
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"pathExtension IN %@", [NSArray arrayWithObjects:@"cyacd", @"cyacd2", nil]];
     NSArray *fileNameList = (NSMutableArray *)[dirContents filteredArrayUsingPredicate:predicate];
-    
+
     for (NSString *fileName in fileNameList) {
         NSMutableDictionary *firmwareFile = [NSMutableDictionary new];
         [firmwareFile setValue:fileName forKey:FILE_NAME];
@@ -431,7 +444,7 @@
     UIActivityIndicatorView * loadingIndicator = (UIActivityIndicatorView *)[cell.contentView viewWithTag:ACTIVITY_INDICATOR_TAG];
     UILabel *fileNameLbl = (UILabel *) [cell.contentView viewWithTag:FILENAME_LABEL_TAG];
     UIButton *checkBoxBtn = (UIButton *) [cell.contentView viewWithTag:CHECKBOX_BUTTON_TAG];
-    
+
     if (!isFileSearchFinished) {
         [loadingIndicator setHidden:NO];
         [checkBoxBtn setHidden:YES];
@@ -446,39 +459,39 @@
         }else if (_upgradeMode == app_stack_separate &&
                   [upgradeButton.titleLabel.text isEqualToString:UPGRADE_BTN_TITLE_UPGRADE] &&
                   fileList.count <= 1){
-            
+
             [checkBoxBtn setHidden:YES];
             fileNameLbl.text = LOCALIZEDSTRING(@"fileNotAvailableMessage");
         }else{
             [checkBoxBtn setHidden:NO];
             [checkBoxBtn setSelected:NO];
-            
+
             if (_upgradeMode == app_stack_separate && selectedFileList.count == 1) {
-                
+
                 NSString *selectedFileStoragePath = [NSString pathWithComponents:[NSArray arrayWithObjects:[[selectedFileList objectAtIndex:0] valueForKey:FILE_PATH],[[selectedFileList objectAtIndex:0] valueForKey:FILE_NAME], nil]];
-                
+
                 NSString *indexPathFileStoragePath = [NSString pathWithComponents:[NSArray arrayWithObjects:[[fileList objectAtIndex:indexPath.row] valueForKey:FILE_PATH],[[fileList objectAtIndex:indexPath.row] valueForKey:FILE_NAME], nil]];
-                
+
                 if ([selectedFileStoragePath isEqualToString:indexPathFileStoragePath]) {
                     if (!stackFileSelected) {
                         [checkBoxBtn setSelected:YES];
                     }
                 }
             }else if (_upgradeMode == app_stack_separate && selectedFileList.count == 2){
-                
+
                 NSString *selectedFileStoragePath = [NSString pathWithComponents:[NSArray arrayWithObjects:[[selectedFileList objectAtIndex:0] valueForKey:FILE_PATH],[[selectedFileList objectAtIndex:1] valueForKey:FILE_NAME], nil]];
-                
+
                 NSString *indexPathFileStoragePath = [NSString pathWithComponents:[NSArray arrayWithObjects:[[fileList objectAtIndex:indexPath.row] valueForKey:FILE_PATH],[[fileList objectAtIndex:indexPath.row] valueForKey:FILE_NAME], nil]];
-                
+
                 if ([selectedFileStoragePath isEqualToString:indexPathFileStoragePath]) {
                     [checkBoxBtn setSelected:YES];
                 }
             }else if (_upgradeMode != app_stack_separate && selectedFileList.count == 1){
-                
+
                 NSString *selectedFileStoragePath = [NSString pathWithComponents:[NSArray arrayWithObjects:[[selectedFileList objectAtIndex:0] valueForKey:FILE_PATH],[[selectedFileList objectAtIndex:0] valueForKey:FILE_NAME], nil]];
-                
+
                 NSString *indexPathFileStoragePath = [NSString pathWithComponents:[NSArray arrayWithObjects:[[fileList objectAtIndex:indexPath.row] valueForKey:FILE_PATH],[[fileList objectAtIndex:indexPath.row] valueForKey:FILE_NAME], nil]];
-                
+
                 if ([selectedFileStoragePath isEqualToString:indexPathFileStoragePath]) {
                     [checkBoxBtn setSelected:YES];
                 }
@@ -502,15 +515,15 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (_upgradeMode == app_stack_separate && selectedFileList.count >= 1) {
-        
+
         NSString *selectedFilePath = [[selectedFileList objectAtIndex:0] valueForKey:FILE_PATH];
         NSString *selectedFileName = [[selectedFileList objectAtIndex:0] valueForKey:FILE_NAME];
         NSString *selectedFileStoragePath = [NSString pathWithComponents:[NSArray arrayWithObjects:selectedFilePath, selectedFileName, nil]];
-        
+
         NSString *indexFilePath = [[fileList objectAtIndex:indexPath.row] valueForKey:FILE_PATH];
         NSString *indexFileName = [[fileList objectAtIndex:indexPath.row] valueForKey:FILE_NAME];
         NSString *indexPathFileStoragePath = [NSString pathWithComponents:[NSArray arrayWithObjects:indexFilePath, indexFileName, nil]];
-        
+
         if ([selectedFileStoragePath isEqualToString:indexPathFileStoragePath]) {
             if (stackFileSelected) {
                 return HIDDEN_ROW_HEIGHT;
@@ -571,7 +584,7 @@
 -(void)onKeyboardHide:(NSNotification *)notification
 {
     if (notification.name == UIKeyboardDidHideNotification) {
-        if (securityKey == nil) {
+        if ((securityKey == nil) && ([securityKeySwitch isOn])) {
             [[UIAlertController alertWithTitle:LOCALIZEDSTRING(SECURITY_KEY_WARNING_TITLE_KEY) message:LOCALIZEDSTRING(SECURITY_KEY_WARNING_MESSAGE_KEY)] presentInParent:nil];
         }
     }
@@ -605,10 +618,10 @@
 - (void)doneButtonPressed {
     [securityKeyTextField resignFirstResponder];
     [self.view endEditing:YES];
-    
+
     //Apply padding with 0 if necessary
     securityKeyTextField.text = [securityKeyTextField.text decoratedHexStringLSB:YES];
-    
+
     NSData *data = [Utilities dataFromHexString:[securityKeyTextField.text undecoratedHexString]];
     if (data.length != SECURITY_KEY_NUM_BYTES) {
         securityKey = nil;

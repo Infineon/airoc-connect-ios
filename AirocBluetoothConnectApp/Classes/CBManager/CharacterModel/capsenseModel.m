@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -122,7 +122,7 @@
         {
             cbCharacteristicDiscoveryHandler(YES, service, nil);
         }
-        
+
         for (CBCharacteristic *characteristic in service.characteristics)
         {
             if (characteristicUUID != nil)
@@ -150,10 +150,10 @@
  */
 -(void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
-    
+
     NSData *data = characteristic.value;
     uint8_t *dataPointer = (uint8_t *)[data bytes];
-    
+
     /**
      * Parse the CapSense proximity value from the characteristic
      */
@@ -183,8 +183,8 @@
     {
         uint8_t numberOfButtons = dataPointer[0];
         _capsenseButtonCount = numberOfButtons;
-        
-        // Getting the 16 bit button status flag        
+
+        // Getting the 16 bit button status flag
         _capsenseButtonStatus1 = dataPointer[1];
         _capsenseButtonStatus2 = dataPointer[2];
         if(cbCharacteristicHandler){
@@ -197,7 +197,7 @@
             cbCharacteristicHandler(NO, error);
         }
     }
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
 }
 

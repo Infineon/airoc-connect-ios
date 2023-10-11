@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -49,7 +49,7 @@
  *
  */
 @interface ProgressHandler () <MBProgressHUDDelegate> {
-    
+
     MBProgressHUD *ProgressView;
 }
 @end
@@ -80,13 +80,13 @@
  *
  */
 - (void)showWithTitle:(NSString *)title detail:(NSString *)detail {
-    
+
     [[UIApplication sharedApplication].keyWindow addSubview:ProgressView];
     ProgressView.delegate = self;
     ProgressView.labelText =title;
     ProgressView.detailsLabelText = detail;
     ProgressView.square = YES;
-    
+
     [ProgressView show:YES];
 }
 

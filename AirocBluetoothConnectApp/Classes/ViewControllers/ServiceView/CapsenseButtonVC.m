@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -36,10 +36,8 @@
 #import "CapsenseButtonCollectionViewCell.h"
 
 #define ACTIVE_STATE_CHECK_VALUE    0x01
-#define BLUE_CAPSENSE_BUTTON_IMAGE  @"blue_capsense_button"
-#define GREEN_CAPSENSE_BUTTON_IMAGE @"green_capsense_button"
-#define RED_CAPSENSE_BUTTON_IMAGE   @"red_capsense_button"
-
+#define CAPSENSE_BUTTON_NORMAL_IMAGE  @"capsense_button_normal"
+#define CAPSENSE_BUTTON_PRESSED_IMAGE @"capsense_button_pressed"
 
 /*!
  *  @class CapsenseButtonVC
@@ -61,7 +59,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+
     // Initialize the model
     [self initCapsenseModel];
 }
@@ -80,7 +78,7 @@
 -(void) viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self]) {
         // Stop characteristic value update when the user exits screen
         [capsenseButtonModel stopUpdate];
@@ -98,7 +96,7 @@
     if (!capsenseButtonModel) {
         capsenseButtonModel = [[capsenseModel alloc] init];
     }
-    
+
     [capsenseButtonModel startDiscoverCharacteristicWithUUID:_capsenseButtonCharacteristicUUID completionHandler:^(BOOL success, CBService *service, NSError *error) {
         // Get characteristic value if found successfully
         if (success) {
@@ -138,9 +136,9 @@
 -(BOOL) capsenseButtonAtPosition:(int)buttonPosition shouldSetActive:(uint8_t) statusFlag
 {
     uint8_t testValue = ACTIVE_STATE_CHECK_VALUE;
-    
+
     testValue = testValue << buttonPosition; // shift the value upto the button position
-    
+
     // check the state of button at the current  position
     if (statusFlag & testValue) {
         return YES;
@@ -158,31 +156,31 @@
 -(UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *cellIdentifier = @"capsenseButtonCellID";
-    
+
     CapsenseButtonCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:cellIdentifier forIndexPath:indexPath];
     if (cell == nil) {
         cell = [[CapsenseButtonCollectionViewCell alloc] init];
     }
-    
+
     if ([indexPath row] > 7) {
         // checking and assigning images for capsense button according to the button active state
         if ([self capsenseButtonAtPosition:(int)([indexPath row]-8) shouldSetActive:capsenseButtonModel.capsenseButtonStatus2]) {
-            cell.capsenseButtonImageView.image = [UIImage imageNamed:GREEN_CAPSENSE_BUTTON_IMAGE];
+            cell.capsenseButtonImageView.image = [UIImage imageNamed:CAPSENSE_BUTTON_PRESSED_IMAGE];
         } else {
-            cell.capsenseButtonImageView.image = [UIImage imageNamed:BLUE_CAPSENSE_BUTTON_IMAGE];
+            cell.capsenseButtonImageView.image = [UIImage imageNamed:CAPSENSE_BUTTON_NORMAL_IMAGE];
         }
     } else {
         // checking and assigning images for capsense button according to the button active state
         if ([self capsenseButtonAtPosition:(int)[indexPath row] shouldSetActive:capsenseButtonModel.capsenseButtonStatus1]) {
-            cell.capsenseButtonImageView.image = [UIImage imageNamed:GREEN_CAPSENSE_BUTTON_IMAGE];
+            cell.capsenseButtonImageView.image = [UIImage imageNamed:CAPSENSE_BUTTON_PRESSED_IMAGE];
         } else {
-            cell.capsenseButtonImageView.image = [UIImage imageNamed:BLUE_CAPSENSE_BUTTON_IMAGE];
+            cell.capsenseButtonImageView.image = [UIImage imageNamed:CAPSENSE_BUTTON_NORMAL_IMAGE];
         }
     }
-    
+
     // Assigning the button number
     cell.capsenseButtonNumberLabel.text = [NSString stringWithFormat:@"%d",(int)[indexPath row]+1];
-    
+
     return cell;
 }
 

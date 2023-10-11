@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -65,21 +65,21 @@
 -(void)setCharacteristicName:(NSString*) characteristicName andProperties:(NSMutableArray *) characteristicProperties
 {
     _characteristicNameLabel.text=characteristicName;
-    
+
      NSString *property = @"";
-    
+
     if (characteristicProperties != nil)
     {
         if (characteristicProperties.count > 0)
         {
             property = [characteristicProperties objectAtIndex:0];
         }
-        
+
         for (int i= 1; i < characteristicProperties.count; i++)
         {
             property = [property stringByAppendingString:[NSString stringWithFormat:@" And %@",[characteristicProperties objectAtIndex:i]]];
         }
-        
+
     }
     characteristicPropertiesLabel.text=property;
 }

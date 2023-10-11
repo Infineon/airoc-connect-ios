@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -78,7 +78,7 @@
     // Do any additional setup after loading the view.
     [self initView];
     [self startUpdate];
-    
+
     // Adding the tap gesture recognizer with uislider to get the tap
     UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(sliderTapped:)] ;
     [_intensitySlider addGestureRecognizer:tapRecognizer];
@@ -87,6 +87,11 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)viewSafeAreaInsetsDidChange{
+    [super viewSafeAreaInsetsDidChange];
+    [self updateColorAndTableViewsSizesForCurrentOrientation];
 }
 
 -(void) viewWillAppear:(BOOL)animated
@@ -99,7 +104,7 @@
 {
     [super viewDidDisappear:animated];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
-    
+
     if (![self.navigationController.viewControllers containsObject:self])
     {
         // Stop receiving characteristic value when the user exits the screen
@@ -116,35 +121,7 @@
 - (void)initView
 {
     _thumbImage.hidden = YES; // Hide cursor initially
-    _colorSelectionViewTopDistanceConstraint.constant = _colorSelectionViewTopDistanceConstraint.constant + NAV_BAR_HEIGHT;
-    
-    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-    if (orientation == UIInterfaceOrientationLandscapeLeft || orientation == UIInterfaceOrientationLandscapeRight)
-    {
-        _valuesDisplayViewHeightConstraint.constant = self.view.frame.size.height - NAV_BAR_HEIGHT - STATUS_BAR_HEIGHT;
-        _colorSelectionViewHeightConstraint.constant = self.view.frame.size.height - NAV_BAR_HEIGHT - STATUS_BAR_HEIGHT;
-        _colorSelectionViewWidthConstraint.constant = self.view.frame.size.width * 0.6;
-        _valuesDisplayViewWidthConstraint.constant = (self.view.frame.size.width * 0.4) - NAV_BAR_HEIGHT - STATUS_BAR_HEIGHT;
-        [self.view layoutIfNeeded];
-        [self.view layoutSubviews];
-    }
-    else
-    {
-        if (self.view.frame.size.height * 0.6 > 300)
-        {
-            _colorSelectionViewHeightConstraint.constant = self.view.frame.size.height * 0.5;
-            [self.view layoutIfNeeded];
-            _valuesDisplayViewHeightConstraint.constant = self.view.frame.size.height - CGRectGetMaxY(_colorSelectionView.frame) - 60;
-        }
-        else
-        {
-            _colorSelectionViewHeightConstraint.constant = 260.0f;
-            _valuesDisplayViewHeightConstraint.constant = self.view.frame.size.height - 260.0f - STATUS_BAR_HEIGHT - NAV_BAR_HEIGHT;
-        }
-        _colorSelectionViewWidthConstraint.constant = self.view.frame.size.width;
-        _valuesDisplayViewWidthConstraint.constant = self.view.frame.size.width;
-        [self.view layoutIfNeeded];
-    }
+    [self updateColorAndTableViewsSizesForCurrentOrientation];
 }
 
 /*!
@@ -153,25 +130,23 @@
  *  @discussion Method to get value from specified characteristic.
  *
  */
--(void)startUpdate
-{
+-(void)startUpdate{
     rgbModel = [[RGBModel alloc] init];
     
     // Establish weak self reference
     __weak typeof(self) wself = self;
-    [rgbModel setDidUpdateValueForCharacteristicHandler:^(BOOL success, NSError *error)
-     {
-         // Establish strong self reference
-         __strong typeof(self) sself = wself;
-         [sself updateRGBValues];
-         
-         // Init intensity slider position
-         NSInteger intensity = sself->rgbModel.intensity;
-         CGFloat percentage = intensity / (CGFloat)0xFF;
+    [rgbModel setDidUpdateValueForCharacteristicHandler:^(BOOL success, NSError *error) {
+        // Establish strong self reference
+        __strong typeof(self) sself = wself;
+        [sself updateRGBValues];
+        
+        // Init intensity slider position
+        NSInteger intensity = sself->rgbModel.intensity;
+        CGFloat percentage = intensity / (CGFloat)0xFF;
         CGFloat delta = percentage * (sself.intensitySlider.maximumValue - sself.intensitySlider.minimumValue);
         CGFloat value = sself.intensitySlider.minimumValue + delta;
-         [sself.intensitySlider setValue:value animated:YES];
-     }];
+        [sself.intensitySlider setValue:value animated:YES];
+    }];
 }
 
 /*!
@@ -218,33 +193,71 @@
 
 #pragma mark - Device orientation notification
 
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+/*!
+ *  @method updateColorAndTableViewsSizeForCurrentOrientation:
+ *
+ *  @discussion Updates color selection view and color values table sizes according to orientation.
+ *  For landscape orientation the color selection view occupies 60% of screen width
+ *  For portrait orientation the color selection view occupies 60% of screen height
+ *
+ */
+- (void)updateColorAndTableViewsSizesForCurrentOrientation {
+    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    CGRect safeArea = self.view.safeAreaLayoutGuide.layoutFrame;
+    CGFloat colorSelectionTopMargin = self.colorSelectionViewTopDistanceConstraint.constant;
 
+    bool isLandscape = \
+        orientation == UIInterfaceOrientationLandscapeLeft ||
+        orientation == UIInterfaceOrientationLandscapeRight;
+
+    if (isLandscape) {
+        // Occupy almost full height (except top margin) and 60% of width
+        self.colorSelectionViewHeightConstraint.constant = safeArea.size.height - colorSelectionTopMargin;
+        self.colorSelectionViewWidthConstraint.constant = safeArea.size.width * 0.6;
+        
+        // Occupy full height and 40% of width
+        self.valuesDisplayViewHeightConstraint.constant = safeArea.size.height;
+        self.valuesDisplayViewWidthConstraint.constant = safeArea.size.width - self.colorSelectionViewWidthConstraint.constant;
+        
+    } else {
+        // Portrait
+        
+        // It is important to take top margin into height calculation. Otherwise intensity slider view will be partially hidden.
+        self.colorSelectionViewHeightConstraint.constant = safeArea.size.height * 0.6 - colorSelectionTopMargin;
+        self.colorSelectionViewWidthConstraint.constant = safeArea.size.width;
+        
+        self.valuesDisplayViewHeightConstraint.constant = safeArea.size.height * 0.4;
+        self.valuesDisplayViewWidthConstraint.constant = safeArea.size.width;
+    }
+    [self.view layoutSubviews];
+}
+
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
+    // Calculate relative position of color picker on gamut image
+    CGPoint oldLocationOnGamut = [_pickerContainer convertPoint:_thumbImage.center toView:_gamutImage];
+    CGFloat relativeXOnGamut = oldLocationOnGamut.x / _gamutImage.frame.size.width;
+    CGFloat relativeYOnGamut = oldLocationOnGamut.y / _gamutImage.frame.size.height;
+    
+    // Update color picker position during rotation
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     __weak __typeof(self) wself = self;
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         __strong __typeof(self) sself = wself;
-        if (sself) {
-            if (IS_IPAD) {
-                UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-                if (orientation == UIInterfaceOrientationLandscapeLeft || orientation == UIInterfaceOrientationLandscapeRight) {
-                    sself.valuesDisplayViewHeightConstraint.constant = sself.view.frame.size.height - NAV_BAR_HEIGHT - STATUS_BAR_HEIGHT;
-                    sself.colorSelectionViewHeightConstraint.constant = sself.view.frame.size.height - NAV_BAR_HEIGHT - STATUS_BAR_HEIGHT;
-                    sself.colorSelectionViewWidthConstraint.constant = sself.view.frame.size.width * 0.6;
-                    sself.valuesDisplayViewWidthConstraint.constant = (sself.view.frame.size.width * 0.4) - NAV_BAR_HEIGHT - STATUS_BAR_HEIGHT;
-                    [sself.view layoutIfNeeded];
-                } else {
-                    sself.colorSelectionViewHeightConstraint.constant = sself.view.frame.size.height * 0.5;
-                    [sself.view layoutIfNeeded];
-                    
-                    sself.valuesDisplayViewHeightConstraint.constant = sself.view.frame.size.height - CGRectGetMaxY(sself.colorSelectionView.frame) - 60;
-                    sself.colorSelectionViewWidthConstraint.constant = sself.view.frame.size.width;
-                    sself.valuesDisplayViewWidthConstraint.constant = sself.view.frame.size.width;
-                    [sself.view layoutIfNeeded];
-                }
-            }
+        if (sself && IS_IPAD) {
+            [sself updateColorAndTableViewsSizesForCurrentOrientation];
+            // Re-calculate layout size. Otherwise color picker will be misplaced
+            [self.view layoutIfNeeded];
+            
+            // Calculate new position of color picker
+            CGFloat newAbsoluteXOnGamut = sself.gamutImage.frame.size.width * relativeXOnGamut;
+            CGFloat newAbsoluteYOnGamut = sself.gamutImage.frame.size.height * relativeYOnGamut;
+            CGPoint newLocationOnGamut = CGPointMake(newAbsoluteXOnGamut, newAbsoluteYOnGamut);
+            CGPoint newLocationOnSuperView = [sself.gamutImage convertPoint:newLocationOnGamut toView:sself.pickerContainer];
+            
+            // Draw color picker on new location
+            [sself.thumbImage setCenter:newLocationOnSuperView];
         }
-    } completion:nil];
+    } completion: nil];
 }
 
 #pragma mark - tap in slider
@@ -265,7 +278,7 @@
     CGFloat delta = percentage * (_intensitySlider.maximumValue - _intensitySlider.minimumValue);
     CGFloat value = _intensitySlider.minimumValue + delta;
     [_intensitySlider setValue:value animated:YES];
-    
+
     // Write the intensity values to the device
     [rgbModel writeColorWithRed:rgbModel.red green:rgbModel.green blue:rgbModel.blue intensity:_intensitySlider.value handler:^(BOOL success, NSError *error) {
         [self updateRGBValues];
@@ -305,11 +318,15 @@
     _thumbImage.hidden = YES;
     unsigned char pixel[4] = {0};
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef context = CGBitmapContextCreate(pixel, 1, 1, 8, 4, colorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedLast);
+    static const int WIDTH = 1;
+    static const int HEIGHT = 1;
+    static const int BITS_PER_COMPONENT = 8;
+    static const int BYTES_PER_ROW = 4;
+    CGContextRef context = CGBitmapContextCreate(pixel, WIDTH, HEIGHT, BITS_PER_COMPONENT, BYTES_PER_ROW, colorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedLast);
     CGContextTranslateCTM(context, -point.x, -point.y);
-    
+
     [_pickerContainer.layer renderInContext:context];
-    
+
     CGContextRelease(context);
     CGColorSpaceRelease(colorSpace);
     CGFloat intensity = _intensitySlider.value/255.0;
@@ -318,7 +335,7 @@
                                      blue:pixel[2]/255.0
                                      alpha:intensity];
     _thumbImage.hidden = NO;
-    
+
     // Checking the selected color reside inside the color gamut
     if(pixel[3] > 0 && (pixel[0] > 0 || pixel[1] > 0 || pixel[2] > 0 ))
     {

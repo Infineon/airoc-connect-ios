@@ -52,10 +52,7 @@
     CGFloat width=(([self getMaxLength:titleArray forFont:sender.titleLabel.font maxHeight:sender.frame.size.height]+10)> sender.frame.size.width) ? [self getMaxLength:titleArray forFont:sender.titleLabel.font maxHeight:sender.frame.size.height]+10:sender.frame.size.width;
     
     CGFloat rowHeight=sender.frame.size.height+4;
-    
-    //This is not readable so dont waste your time :p
-    
-    CGFloat height=(rowHeight*titleArray.count>([self getAncestorView:sender].frame.origin.y+[self getAncestorView:sender].frame.size.height-([sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].origin.y+[sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].size.height+10))) ? [self getAncestorView:sender].frame.origin.y+[self getAncestorView:sender].frame.size.height-([sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].origin.y+[sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].size.height+10):rowHeight*titleArray.count;
+    CGFloat height = [self calculateDropDownHeight:rowHeight sender:sender titleArray:titleArray];
     
     height=height-((int)height%(int)rowHeight);
     
@@ -92,21 +89,33 @@
     return self;
 }
 
--(id) initWithDelegate:(id) delegate titles:(NSArray*) titleArray onButton:(UIButton*)sender withFrame:(CGRect)frame
+-(id) initWithDelegate:(id) delegate titles:(NSArray*) titleArray onButton:(UIButton*)sender underLineEditFrame:(CGRect)guideFrame
 {
     self.parentButton=sender;
     self.dropdownType=basic;
-    CGFloat width= frame.size.width;
     
-    CGFloat rowHeight=frame.size.height - 4;
+    // Collect screen info. Add offset to avoid sticking of dropdown frame right to the screen edge
+    CGFloat screenWidth = [[[UIApplication sharedApplication] delegate] window].frame.size.width - 15;
+    CGFloat screenHeigth = [[[UIApplication sharedApplication] delegate] window].frame.size.height - 15;
     
-    //This is not readable so dont waste your time :p
+    // Calculare frame that contains desired size if possible. The frame must fit into the screen
+    CGFloat rowHeight = guideFrame.size.height - 4;
+    CGFloat desiredHeight = [self calculateDropDownHeight:rowHeight sender:sender titleArray:titleArray];
+    CGFloat desiredWidth = [self getMaxLength:titleArray forFont:sender.titleLabel.font maxHeight:sender.frame.size.height];
+
+    // Size that fits into the screen
+    CGFloat height = MIN(screenHeigth, desiredHeight);
+    CGFloat width = MIN(screenWidth, desiredWidth);
     
-    CGFloat height=(rowHeight*titleArray.count>([self getAncestorView:sender].frame.origin.y+[self getAncestorView:sender].frame.size.height-([sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].origin.y+[sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].size.height+10))) ? [self getAncestorView:sender].frame.origin.y+[self getAncestorView:sender].frame.size.height-([sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].origin.y+[sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].size.height+10):rowHeight*titleArray.count;
-    
-    height=height-((int)height%(int)rowHeight);
-    
-    if(self=[self initWithFrame:CGRectMake(frame.origin.x, sender.frame.origin.y+sender.frame.size.height, width, height)])
+    // Calculate frame origin. Frame will try to stick its top-left corner to lineEdits's bottom-left corner
+    CGFloat desiredOriginX = guideFrame.origin.x;
+    CGFloat desiredOriginY = guideFrame.origin.y + guideFrame.size.height;
+
+    // Now fix the position if dropdown frame comes out of screen
+    CGFloat originX = MIN(desiredOriginX, screenWidth-width);
+    CGFloat originY = MIN(desiredOriginY, screenHeigth-height);
+            
+    if(self=[self initWithFrame:CGRectMake(originX, originY, width, height)])
     {
         self.delegate=delegate;
         self.cellHeight=rowHeight;
@@ -273,9 +282,7 @@
     CGFloat height=(rowHeight*titleArray.count>([self getAncestorView:sender].frame.origin.y+[self getAncestorView:sender].frame.size.height-([sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].origin.y+[sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].size.height+10))) ? [self getAncestorView:sender].frame.origin.y+[self getAncestorView:sender].frame.size.height-([sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].origin.y+[sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].size.height+10):rowHeight*titleArray.count;
     
     height=height-((int)height%(int)rowHeight);
-    
-    
-    
+
     if(self=[self initWithFrame:CGRectMake(frame.origin.x,frame.origin.y, width, height)])
     {
         self.delegate=delegate;
@@ -315,14 +322,14 @@
         [self addSubview:arrowImage];
         self.frame=[sender.superview convertRect:self.frame toView:[self getAncestorView:sender]];
         [[self getAncestorView:sender] addSubview:self];
-        
-        
-        
-        
-        
     }
     
     return self;
+}
+
+- (CGFloat)calculateDropDownHeight:(CGFloat)rowHeight sender:(UIButton *)sender titleArray:(NSArray *)titleArray {
+    CGFloat height=(rowHeight*titleArray.count>([self getAncestorView:sender].frame.origin.y+[self getAncestorView:sender].frame.size.height-([sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].origin.y+[sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].size.height+10))) ? [self getAncestorView:sender].frame.origin.y+[self getAncestorView:sender].frame.size.height-([sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].origin.y+[sender.superview convertRect:sender.frame toView:[self getAncestorView:sender]].size.height+10):rowHeight*titleArray.count;
+    return height;
 }
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

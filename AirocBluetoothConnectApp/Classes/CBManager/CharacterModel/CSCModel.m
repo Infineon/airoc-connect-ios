@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -47,9 +47,9 @@
 {
     void(^cbCharacteristicHandler)(BOOL success, NSError *error);
     void(^cbCharacteristicDiscoverHandler)(BOOL success, NSError *error);
-    
+
     CBCharacteristic *CSCCharacteristic;
-    
+
     float previousRevolution, previousEventTime;
 }
 
@@ -67,7 +67,7 @@
 {
     self = [super init];
     if (self) {
-        
+
         previousEventTime = 0.0;
         previousRevolution = 0.0;
     }
@@ -97,7 +97,7 @@
 -(void)updateCharacteristicWithHandler:(void (^) (BOOL success, NSError *error))handler
 {
     cbCharacteristicHandler = handler;
-    
+
     if (CSCCharacteristic)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:CSC_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:CSC_CHARACTERISTIC_UUID] descriptor:nil operation:START_NOTIFY];
@@ -115,7 +115,7 @@
 -(void)stopUpdate
 {
     cbCharacteristicHandler = nil;
-    
+
     if (CSCCharacteristic)
     {
         if (CSCCharacteristic.isNotifying)
@@ -154,7 +154,7 @@
     {
         cbCharacteristicDiscoverHandler(NO,error);
     }
-    
+
 }
 
 /*!
@@ -171,7 +171,7 @@
         if(error == nil)
         {
             [self getCSCData:characteristic]; // Parse the data received from the characteristic
-            
+
             if (cbCharacteristicHandler) {
                 cbCharacteristicHandler(YES,nil);
             }
@@ -197,16 +197,16 @@
 {
     NSData *data =[characteristic value];
     const uint8_t *reportData = [data bytes];
-    
+
     int bitPosition = 1;
     // Checking Cumulative Wheel Revolutions present
-    
+
     if ((reportData[0] & 0x01) == 1)
     {
         // Cumulative Wheel Revolutions present
         uint32_t  wheelRevolutionsCount = (uint32_t)CFSwapInt32LittleToHost(*(uint32_t *)&reportData[bitPosition]);
         bitPosition += 6;
-        
+
         if (wheelRevolutionsCount && _wheelRadius)
         {
             float wheelCircumference;
@@ -214,17 +214,17 @@
             self.coveredDistance = (float)wheelRevolutionsCount * wheelCircumference;
         }
     }
-  
+
     if ((reportData[0] & 0x02) > 0)
     {
         // Cumulative Crank Revolutions present
         uint16_t CrankRevolutionsCount = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[bitPosition]));
         bitPosition += 2;
-        
+
         uint16_t LastEvent = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[bitPosition]));
         [self calculateRPMForCrankrevolutions:CrankRevolutionsCount eventTime:LastEvent];
     }
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:CSC_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:CSC_CHARACTERISTIC_UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
 
 }
@@ -237,12 +237,12 @@
  */
 -(void) calculateRPMForCrankrevolutions:(float)currentRevolution eventTime:(float)lastEventTime
 {
-    
+
     if (lastEventTime == previousEventTime)
     {
         return;
     }
-    
+
     if (previousEventTime == 0.0 && previousRevolution == 0.0)
     {
         previousEventTime = lastEventTime;
@@ -257,14 +257,14 @@
         }
         else
             timeDelta = ((65535.0 + lastEventTime) - previousEventTime)/1024.0;
-        
+
         rpm = (currentRevolution - previousRevolution) * (60.0 / timeDelta);
-        
+
         if (rpm > 0.0)
         {
             cadence = (int) rpm;
         }
-        
+
         previousEventTime = lastEventTime;
         previousRevolution = currentRevolution;
     }

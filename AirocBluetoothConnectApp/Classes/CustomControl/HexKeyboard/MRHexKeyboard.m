@@ -23,6 +23,7 @@
 //
 
 #import "MRHexKeyboard.h"
+#import "Constants.h"
 
 const CGFloat kKeyboardHeight = 305.0f;
 
@@ -50,7 +51,7 @@ static UIColor *sGrayColor = nil;
     if (self) {
         _textField = textField;
         sGrayColor = [UIColor lightTextColor];
-        self.backgroundColor = [UIColor lightGrayColor];
+        self.backgroundColor = COLOR_PRIMARY;
         [self createButtons];
     }
     return self;
@@ -90,9 +91,6 @@ static UIColor *sGrayColor = nil;
 - (void)makeButtonWithRect:(CGRect)rect title:(NSString *)title grayBackground:(BOOL)grayBackground {
     UIButton *button = [[UIButton alloc] initWithFrame:rect];
     CGFloat fontSize = 25.0f;
-    if (![[NSCharacterSet decimalDigitCharacterSet] isSupersetOfSet:[NSCharacterSet characterSetWithCharactersInString:title]]) {
-        fontSize = 20.0f;
-    }
     button.backgroundColor = (grayBackground) ? sGrayColor : [UIColor whiteColor];
     button.titleLabel.font = [UIFont systemFontOfSize:fontSize];
     [button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];

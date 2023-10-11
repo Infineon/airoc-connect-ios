@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "carousel_heart_rate.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

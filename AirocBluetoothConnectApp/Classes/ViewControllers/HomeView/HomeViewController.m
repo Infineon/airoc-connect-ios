@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -71,11 +71,6 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     [self addRefreshControl];
-    if ([[[NSUserDefaults standardUserDefaults] valueForKey:LOCALIZEDSTRING(@"OTAUpgradeStatus")] boolValue]) {
-        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:LOCALIZEDSTRING(@"OTAUpgradeStatus")];
-        
-        [[UIAlertController alertWithTitle:APP_NAME message:LOCALIZEDSTRING(@"OTAAppUpgradePendingWarning") delegate:nil cancelButtonTitle:OPT_OK otherButtonTitles:nil, nil] presentInParent:nil];
-    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -96,7 +91,7 @@
     [super viewDidAppear:animated];
     [[CyCBManager sharedManager] disconnectPeripheral:[[CyCBManager sharedManager] myPeripheral]];
     [[CyCBManager sharedManager] setCbDiscoveryDelegate:self];
-    
+
     // Start scanning for devices
     [[CyCBManager sharedManager] startScanning];
 }
@@ -121,7 +116,7 @@
 // called after search bar is hidden
 -(void) onSearchBarDidHide{
     [super onSearchBarDidHide];
-    
+
     // Seach bar is hidden now, so clean the filter and reload peripherals list
     // Note that search bar may be hidden directly by pressing search button
     // or by connecting to peripheral device
@@ -148,12 +143,12 @@
     NSMutableArray<CBPeripheralExt*> *source = loadedPeripherals;
     NSMutableArray<CBPeripheralExt*> *result = [NSMutableArray new];
     NSString *searchString = self->filterString;
-    
+
     // Skip filtering if user isn't searching anything or explicitly set empty filter
     if (searchString == nil || searchString.length == 0){
         return source;
     }
-    
+
     for (CBPeripheralExt* peripheral in source){
         if (peripheral.mPeripheral.name.length > 0){
             if ([[peripheral.mPeripheral.name lowercaseString] rangeOfString:[searchString lowercaseString]].location != NSNotFound) {
@@ -199,7 +194,7 @@
     UITableViewHeaderFooterView *header = (UITableViewHeaderFooterView *)view;
     CGRect headerFrame = header.frame;
     header.textLabel.frame = headerFrame;
-    [header.textLabel setTextColor:[UIColor colorWithRed:12.0/255.0 green:55.0/255.0 blue:123.0/255.0 alpha:1.0]];
+    header.textLabel.textColor = COLOR_DARK;
     header.textLabel.textAlignment = NSTextAlignmentCenter;
 }
 
@@ -235,11 +230,8 @@
 
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UIImageView *cellBGImageView=[[UIImageView alloc]initWithFrame:cell.bounds];
-    UIImage *buttonImage = [[UIImage imageNamed:CELL_BG_IMAGE]
-                            resizableImageWithCapInsets:UIEdgeInsetsMake(2, 10, 2, 10)];
-    [cellBGImageView setImage:buttonImage];
-    cell.backgroundView=cellBGImageView;
+    [cell viewWithTag:42].layer.borderColor = COLOR_PRIMARY.CGColor;
+    [cell viewWithTag:42].layer.borderWidth = 1;
 }
 
 #pragma mark - TableView Delegates
@@ -270,13 +262,13 @@
         // Clean peripherals and view
         [loadedPeripherals removeAllObjects];
         [self reloadPeripheralTable];
-        
+
         // End reload animation
         [refreshControl endRefreshing];
-        
+
         // Start scanning. New devices will appear via discoveryDidRefresh callback
         [[CyCBManager sharedManager] refreshPeripherals];
-        
+
     }
 }
 
@@ -300,7 +292,7 @@
     // Called by Bluetooth manager when it discovers new peripheral
     // Store new list of discovered peripherals
     loadedPeripherals = [[CyCBManager sharedManager] foundPeripherals];
-    
+
     // Filter and display them
     [self reloadPeripheralTable];
 }
@@ -334,7 +326,7 @@
     if (ok) {
         CBPeripheralExt *modelItem = model[index];
         [[ProgressHandler sharedInstance] showWithTitle:LOCALIZEDSTRING(@"connecting") detail:modelItem.mPeripheral.name];
-        
+
         [[CyCBManager sharedManager] connectPeripheral:modelItem.mPeripheral completionHandler:^(BOOL success, NSError *error) {
             [[ProgressHandler sharedInstance] hideProgressView];
             if(success) {
@@ -351,7 +343,7 @@
             }
         }];
     }
-    
+
     if (!ok) {
         [self.view makeToast:LOCALIZEDSTRING(@"unknownError")];
         [[CyCBManager sharedManager] refreshPeripherals];

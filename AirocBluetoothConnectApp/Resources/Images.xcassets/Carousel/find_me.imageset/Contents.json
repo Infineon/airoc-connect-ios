@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "carousel_find_me.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

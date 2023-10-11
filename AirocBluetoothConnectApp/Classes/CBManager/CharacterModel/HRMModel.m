@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -116,7 +116,7 @@
             if ([aChar.UUID isEqual:HRM_CHARACTERISTIC_UUID]) {
                 [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:aChar];
                 [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:HRM_HEART_RATE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:HRM_CHARACTERISTIC_UUID] descriptor:nil operation:START_NOTIFY];
-                
+
                 cbCharacteristicDiscoveryHandler(YES,nil);
             } else if([aChar.UUID isEqual:HRM_BODY_LOCATION_CHARACTERISTIC_UUID]) {
                 [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:aChar];
@@ -153,12 +153,12 @@
  */
 - (void) getHRMDataFromCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
     // https://developer.bluetooth.org/gatt/characteristics/Pages/CharacteristicViewer.aspx?u=org.bluetooth.characteristic.heart_rate_measurement.xml //
-    
+
     NSData *data = [characteristic value];
     const uint8_t *bytes = [data bytes];
-    
+
     NSUInteger offset = 1;// One byte for Flags field
-    
+
     // Bits Per Minute (BPM)
     if ((bytes[0] & 0x01) == 0) { // BPM as uint8
         self.bpmValue = bytes[1];
@@ -168,7 +168,7 @@
         self.bpmValue = CFSwapInt16LittleToHost(*(uint16_t *)(&bytes[1]));
         offset =  offset + 2;
     }
-    
+
     // Sensor Contact Status
     if ((bytes[0] & 0x06) == 0x06) { // feature supported and contact detected
         self.sensorContact = SENSOR_CONTACT_DETECTED;
@@ -177,7 +177,7 @@
     } else { // feature not supported
         self.sensorContact = SENSOR_CONTACT_NOT_SUPPORTED;
     }
-    
+
     // Energy Expended (EE)
     if (bytes[0] & 0x08) // EE present
     {
@@ -189,7 +189,7 @@
     {
         self.energyExpended = @"0";
     }
-    
+
     // RR interval
     if (bytes[0] & 0x10)
     {
@@ -210,7 +210,7 @@
             NSLog(@"%@", self.RRinterval);
         }
     }
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:HRM_HEART_RATE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:HRM_CHARACTERISTIC_UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
 }
 
@@ -264,7 +264,7 @@
     else {
         self.sensorLocation = LOCATION_NA;
     }
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:sensorData]]];
 }
 

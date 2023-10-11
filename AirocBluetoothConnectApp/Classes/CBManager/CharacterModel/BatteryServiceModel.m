@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -55,7 +55,7 @@
 {
     self = [super init];
     if (self) {
-        
+
         self.batteryServiceDict = [[NSMutableDictionary alloc] init];
         [self.batteryServiceDict setValue:@" " forKey:[NSString stringWithFormat:@"%@",[[CyCBManager sharedManager] myService]]];
     }
@@ -91,7 +91,7 @@
     {
         isCharacteristicRead = YES;
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:BATTERY_LEVEL_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:BATTERY_LEVEL_CHARACTERISTIC_UUID] descriptor:nil operation:READ_REQUEST];
-        
+
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:_batteryCharacterisic];
     }
 }
@@ -109,7 +109,7 @@
     if (_batteryCharacterisic != nil)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:BATTERY_LEVEL_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:BATTERY_LEVEL_CHARACTERISTIC_UUID] descriptor:nil operation:START_NOTIFY];
-        
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:_batteryCharacterisic];
     }
 }
@@ -157,7 +157,7 @@
                 _batteryCharacterisic = aChar;
                 cbCharacteristicDiscoverHandler(YES,nil);
             }
-           
+
         }
     }
     else
@@ -173,7 +173,7 @@
 
 -(void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
-    
+
     if(error == nil )
     {
         [self handleBatteryCharacteristicValueWithChar:characteristic];
@@ -193,7 +193,7 @@
     {
         [self getBatteryData:characteristic];
     }
-    
+
     if (_delegate && [_delegate respondsToSelector:@selector(updateBatteryUI)])
     {
         [_delegate updateBatteryUI];
@@ -213,7 +213,7 @@
     NSData *data = [characteristic value];
     const uint8_t *reportData = [data bytes];
     NSString *levelString=[NSString stringWithFormat:@"%d",reportData[0]];
-    
+
     if (!isCharacteristicRead)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
@@ -223,7 +223,7 @@
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
         isCharacteristicRead = NO;
     }
-    
+
     [self.batteryServiceDict setValue:levelString forKey:[NSString stringWithFormat:@"%@",characteristic.service]];
 }
 

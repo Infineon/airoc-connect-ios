@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -56,7 +56,7 @@
 {
     self = [super init];
     if (self) {
-        
+
         XYZCharacteristicsArray = [[NSMutableArray alloc] init];
     }
     return self;
@@ -73,7 +73,7 @@
     uint8_t val = (uint8_t)newScanInterval; // The value which you want to write.
     NSData  *valData = [NSData dataWithBytes:(void*)&val length:sizeof(val)];
     [[[CyCBManager sharedManager] myPeripheral] writeValue:valData forCharacteristic:scanIntervalCharacteristic type:CBCharacteristicWriteWithoutResponse];
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ACCELEROMETER_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:scanIntervalCharacteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",WRITE_REQUEST,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:valData]]];
 }
 
@@ -89,7 +89,7 @@
     uint8_t val = (uint8_t)filterconfiguration; // The value which you want to write.
     NSData  *valData = [NSData dataWithBytes:(void*)&val length:sizeof(val)];
     [[[CyCBManager sharedManager] myPeripheral] writeValue:valData forCharacteristic:dataAccumulationCharacteristic type:CBCharacteristicWriteWithoutResponse];
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ACCELEROMETER_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:dataAccumulationCharacteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",WRITE_REQUEST,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:valData]]];
 }
 
@@ -141,7 +141,7 @@
             sensorTypecharacteristic = characteristic;
         }
     }
-    
+
 }
 
 /*!
@@ -169,7 +169,7 @@
         for (CBCharacteristic *characteristic in XYZCharacteristicsArray)
         {
             [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:status forCharacteristic:characteristic];
-            
+
             if (status)
             {
                 [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ACCELEROMETER_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:START_NOTIFY];
@@ -193,25 +193,25 @@
 
 -(void) readAccelerometerCharacteristics
 {
-    
+
     if (scanIntervalCharacteristic != nil)
     {
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:scanIntervalCharacteristic];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ACCELEROMETER_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:scanIntervalCharacteristic.UUID] descriptor:nil operation:READ_REQUEST];
     }
-    
+
     if (dataAccumulationCharacteristic != nil)
     {
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:dataAccumulationCharacteristic];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ACCELEROMETER_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:dataAccumulationCharacteristic.UUID] descriptor:nil operation:READ_REQUEST];
     }
-    
+
     if (sensorTypecharacteristic != nil)
     {
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:sensorTypecharacteristic];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ACCELEROMETER_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:sensorTypecharacteristic.UUID] descriptor:nil operation:READ_REQUEST];
     }
 }
@@ -229,7 +229,7 @@
 {
     NSData *data = [characteristic value];
     const uint8_t *reportData = (uint8_t *)[data bytes];
-    
+
     if ([characteristic.UUID isEqual:ACCELEROMETER_READING_X_CHARACTERISTIC_UUID])
     {
         _xValue = CFSwapInt16LittleToHost(*(uint16_t *) &reportData[0]);
@@ -269,7 +269,7 @@
     {
         _sensorTypeString = [NSString stringWithFormat:@"%d",reportData[0]];
     }
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
 
 }

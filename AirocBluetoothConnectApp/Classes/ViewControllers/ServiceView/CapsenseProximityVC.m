@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -69,11 +69,11 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    _proximityColorRectangleTopView.backgroundColor = BLUE_COLOR;
+    _proximityColorRectangleTopView.backgroundColor = COLOR_ACCENT;
     [self initializeView];
     // Initialize model
     [self initCapsenseProximityModel];
-    
+
     // Initialize audio player
     [self initializeAudioPlayer];
 }
@@ -90,7 +90,7 @@
 
 -(void) viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self]) {
         // Stop receiving characteristic value when the user exits screen
         [proximityModel stopUpdate];
@@ -99,7 +99,7 @@
 
 /*
  #pragma mark - Navigation
- 
+
  // In a storyboard-based application, you will often want to do a little preparation before navigation
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
  // Get the new view controller using [segue destinationViewController].
@@ -129,11 +129,11 @@
 -(void) initializeAudioPlayer {
     NSString *filePath = [[NSBundle mainBundle] pathForResource:AUDIO_NAME ofType:AUDIO_TYPE];
     NSURL *audioFileURL = [NSURL fileURLWithPath:filePath];
-    
+
     if (!_audioPlayer) {
         NSError *error;
         _audioPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:audioFileURL error:&error];
-        
+
         if(error != nil) {
             [[UIAlertController alertWithTitle:APP_NAME message:LOCALIZEDSTRING(@"AudioErrorAlert")] presentInParent:nil];
         }
@@ -150,7 +150,7 @@
     if (!proximityModel) {
         proximityModel = [[capsenseModel alloc] init];
     }
-    
+
     [proximityModel startDiscoverCharacteristicWithUUID:_proximityCharacteristicUUID completionHandler:^(BOOL success, CBService *service, NSError *error) {
         if (success) {
             // start receiving characteristic value if found successfully
@@ -189,10 +189,10 @@
 -(void) updateProximityUIWithValue:(float)proximityValue {
     lastProximityValue = proximityValue;
     // Calculate view size with the proximity value
-    
+
     const CGFloat constraintValue =(_proximityColorRectangleView.frame.size.height / PROXIMITY_VALUE_MAX) * proximityValue;
     _overlayViewBottomDistanceConstraint.constant = constraintValue;
-    
+
     /* playing audio when the value goes beyond threshold */
     if (proximityValue >= PROXIMITY_VALUE_THRESHOLD) {
         // Play audio only once when it goes above threshold value
@@ -209,7 +209,7 @@
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    
+
     __weak __typeof(self) wself = self;
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
         __strong __typeof(self) sself = wself;

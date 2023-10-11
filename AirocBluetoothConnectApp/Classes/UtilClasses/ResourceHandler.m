@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -35,8 +35,6 @@
 
 #define SERVICE_AND_CHARACTERISTIC_NAMES_PLIST      @"serviceAndCharacteristicNames"
 #define PLIST                                       @"plist"
-#define UNKNOWN_SERVICE                             @"Unknown Service"
-#define UNKNOWN_CHARACTERISTIC                      @"Unknown Characteristic"
 
 /*!
  *  @class ResourceHandler
@@ -69,13 +67,14 @@
 +(NSString *) getServiceNameForUUID:(CBUUID *)UUID
 {
     NSDictionary *allServicesAndCharacteristicsDict = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:SERVICE_AND_CHARACTERISTIC_NAMES_PLIST ofType:PLIST]];
-    
-    NSString *serviceName = [allServicesAndCharacteristicsDict objectForKey:UUID.UUIDString];
-    
+
+    NSString *UUIDString = [UUID UUIDString];
+
+    NSString *serviceName = [allServicesAndCharacteristicsDict objectForKey:UUIDString];
+
     if (serviceName.length < 1)
-    {
-        serviceName = UNKNOWN_SERVICE;
-    }
+        serviceName = [UUIDString lowercaseString];
+
     return serviceName;
 }
 
@@ -90,12 +89,13 @@
 {
     NSDictionary *allServicesAndCharacteristicsDict = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:SERVICE_AND_CHARACTERISTIC_NAMES_PLIST ofType:PLIST]];
     
-    NSString *characteristicName = [allServicesAndCharacteristicsDict objectForKey:UUID.UUIDString];
+    NSString *UUIDString = [UUID UUIDString];
     
+    NSString *characteristicName = [allServicesAndCharacteristicsDict objectForKey:UUIDString];
+
     if (characteristicName.length < 1)
-    {
-        characteristicName = UNKNOWN_CHARACTERISTIC;
-    }
+        characteristicName = [UUIDString lowercaseString];
+    
     return characteristicName;
 }
 

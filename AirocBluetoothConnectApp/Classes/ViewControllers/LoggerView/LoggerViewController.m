@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -48,6 +48,7 @@
 @interface LoggerViewController () <AlertControllerDelegate>
 {
     NSArray *dateHistory;
+    NSMutableArray* historyPopupItems;
     UIAlertController *historyListActionSheet;
     IBOutlet UIButton *historyButton;
     CoreDataHandler *logDataHandler;
@@ -61,38 +62,59 @@
 
 -(void)viewDidLoad {
     [super viewDidLoad];
+    [[super navBarTitleLabel] setText:DATA_LOGGER];
     
     if (!logDataHandler) {
         logDataHandler = [[CoreDataHandler alloc] init];
     }
     
-    [[super navBarTitleLabel] setText:DATA_LOGGER];
-    [self initLoggerTextView:[[LoggerHandler logManager] getTodayLogData]];
+    // Cleanup old logs
     [[LoggerHandler logManager] deleteOldLogData];
+
+    // Load log files names. Newer are on top
+    dateHistory = [[[logDataHandler getLogDates] reverseObjectEnumerator] allObjects];
     
-    [self initHistoryList];
+    // Set current file
+    [self initCurrentLogFile];
     
+    // Update UI
+    [self updateViewsWithDataFromCurrentFile];
+
+    [self showToastWithLastLogTimeForCurrentFile];
+}
+
+/*!
+ *  @method initCurrentLogFile
+ *
+ *  @discussion Sets the current file to current date or newest recorded log file
+ *
+ */
+-(void)initCurrentLogFile {
+    // File for current date by default
+    _currentLogFile = [Utilities getTodayDateString];
+    
+    // But if we haven't recorded anything today display the newest log file if it exists
+    if ([[LoggerHandler logManager] getTodayLogData].count == 0 && dateHistory.count != 0){
+        _currentLogFile = [dateHistory objectAtIndex:0];
+    }
+}
+
+/*!
+ *  @method initLogViewsWithData
+ *
+ *  @discussion updates the UI with data from current log file
+ *
+ */
+-(void)updateViewsWithDataFromCurrentFile {
+
+    _fileNameLabel.text = [NSString stringWithFormat:@"%@.txt", _currentLogFile];
+    [self initLoggerTextView:[logDataHandler getLogEventsForDate:_currentLogFile]];
+
+    // Scroll to newest logs
     if (self.loggerTextView.text.length > 0) {
         NSRange initialRange = NSMakeRange(0, 1);
         [self.loggerTextView scrollRangeToVisible:initialRange];
     }
-    [self showToastWithLatestLoggedTime];
-}
-
-/*!
- *  @method initHistoryList
- *
- *  @discussion Method to initialize array with last seven days data
- *
- */
--(void)initHistoryList {
-    dateHistory = [[[logDataHandler getLogDates] reverseObjectEnumerator] allObjects];
-    if ([[LoggerHandler logManager] getTodayLogData].count > 0) {
-        _currentLogFileName = [NSString stringWithFormat:@"%@.txt", [dateHistory objectAtIndex:0]];
-    } else {
-        _currentLogFileName = [NSString stringWithFormat:@"%@.txt", [Utilities getTodayDateString]];
-    }
-    _fileNameLabel.text = _currentLogFileName;
 }
 
 /*!
@@ -129,17 +151,23 @@
 -(void)showActionSheetForSender:(id)sender {
     historyListActionSheet = nil;
     historyListActionSheet = [UIAlertController actionSheetWithTitle:[sender title] sourceView:sender sourceRect:[sender bounds] delegate:self cancelButtonTitle:OPT_CANCEL destructiveButtonTitle:nil otherButtonTitles:nil, nil];
-    
-    if ([dateHistory count]) {
-        if ([[LoggerHandler logManager] getTodayLogData].count == 0) {
-            [historyListActionSheet addOtherButtonWithTitle:[NSString stringWithFormat:@"%@.txt", [Utilities getTodayDateString]]];
-        }
-        for(NSString *date in dateHistory) {
-            [historyListActionSheet addOtherButtonWithTitle:[NSString stringWithFormat:@"%@.txt", date]];
-        }
-    } else {
-        [historyListActionSheet addOtherButtonWithTitle:[NSString stringWithFormat:@"%@.txt", [Utilities getTodayDateString]]];
+
+    // Manually add today date to the list if not present
+    [historyPopupItems removeAllObjects];
+    NSString* today = [Utilities getTodayDateString];
+    historyPopupItems = [dateHistory mutableCopy];
+    if (![historyPopupItems containsObject:today]){
+        [historyPopupItems addObject:today];
     }
+
+    // Sort items. Newest are on top
+    historyPopupItems = [[Utilities sortDates:historyPopupItems withNewestFirst:true] mutableCopy];
+
+    // Append them to view
+    for (NSString *date in historyPopupItems) {
+        [historyListActionSheet addOtherButtonWithTitle:[NSString stringWithFormat:@"%@.txt", date]];
+    }
+
     [historyListActionSheet presentInParent:self];
 }
 
@@ -151,26 +179,14 @@
  */
 - (void)alertController:(nonnull UIAlertController *)alertController clickedButtonAtIndex:(NSInteger)buttonIndex {
     if(buttonIndex != alertController.cancelButtonIndex ) { // other than CANCEL button
-        if ([dateHistory count]) { // history available
-            if ([[LoggerHandler logManager] getTodayLogData].count == 0) { // no today's history
-                if (buttonIndex == alertController.firstOtherButtonIndex) { // first LOG button
-                    _currentLogFileName = [NSString stringWithFormat:@"%@.txt",[Utilities getTodayDateString]];
-                    _fileNameLabel.text = _currentLogFileName;
-                    [self initLoggerTextView:[[LoggerHandler logManager] getTodayLogData]];
-                } else { // 2+ LOG button
-                    [self initLoggerTextView:[logDataHandler getLogEventsForDate:[dateHistory objectAtIndex:(buttonIndex - alertController.firstOtherButtonIndex - 1)]]];
-                    _currentLogFileName = [NSString stringWithFormat:@"%@.txt", [dateHistory objectAtIndex:(buttonIndex - alertController.firstOtherButtonIndex - 1)]];
-                    _fileNameLabel.text = _currentLogFileName;
-                }
-            } else { // today's history available
-                [self initLoggerTextView:[logDataHandler getLogEventsForDate:[dateHistory objectAtIndex:(buttonIndex - alertController.firstOtherButtonIndex)]]];
-                _currentLogFileName = [NSString stringWithFormat:@"%@.txt", [dateHistory objectAtIndex:(buttonIndex - alertController.firstOtherButtonIndex)]];
-                _fileNameLabel.text = _currentLogFileName;
-            }
-        } else { // no history
-            _currentLogFileName = [NSString stringWithFormat:@"%@.txt",[Utilities getTodayDateString]];
-            _fileNameLabel.text = _currentLogFileName;
+        long indexOfSelectedLogFile = buttonIndex - alertController.firstOtherButtonIndex;
+        NSString* selectedItem = [historyPopupItems objectAtIndex:indexOfSelectedLogFile];
+        if ([dateHistory containsObject:selectedItem]){
+            _currentLogFile = selectedItem;
+        } else {
+            _currentLogFile = [Utilities getTodayDateString];
         }
+        [self updateViewsWithDataFromCurrentFile];
     }
     historyListActionSheet = nil;
 }
@@ -181,19 +197,19 @@
  *  @discussion Method to show the user the last logged time
  *
  */
--(void) showToastWithLatestLoggedTime
+-(void) showToastWithLastLogTimeForCurrentFile
 {
-    NSArray *stringArray = [[[[LoggerHandler logManager] getTodayLogData] lastObject] componentsSeparatedByString:DATE_SEPARATOR];
+    NSArray *stringArray = [[[logDataHandler getLogEventsForDate:_currentLogFile] lastObject] componentsSeparatedByString:DATE_SEPARATOR];
     if([stringArray count])
     {
         NSString *lastItem = [[stringArray firstObject] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         lastItem  = [[[lastItem stringByReplacingOccurrencesOfString:@"[" withString:@""] stringByReplacingOccurrencesOfString:@"]" withString:@""] stringByReplacingOccurrencesOfString:@"|" withString:@" "];
-        
+
         [self.view makeToast:[NSString stringWithFormat:@"%@ %@",LOCALIZEDSTRING(@"loggerToastMessage"),lastItem]];
     }
     else
     {
-        [self.view makeToast:[NSString stringWithFormat:@"%@ %@ %@",LOCALIZEDSTRING(@"loggerToastMessage"),[Utilities getTodayDateString],[Utilities getTodayTimeString]]];
+        [self.view makeToast:[NSString stringWithFormat:@"%@ %@",LOCALIZEDSTRING(@"loggerToastMessage"),_currentLogFile]];
     }
 }
 

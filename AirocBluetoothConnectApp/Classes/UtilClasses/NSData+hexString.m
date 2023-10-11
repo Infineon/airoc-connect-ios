@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -38,13 +38,13 @@
 - (NSString *)hexString {
     const unsigned char *dataBuffer = (const unsigned char *)[self bytes];
     if (!dataBuffer) return [NSString string];
-    
+
     NSUInteger          dataLength  = [self length];
     NSMutableString     *hexString  = [NSMutableString stringWithCapacity:(dataLength * 2)];
-    
+
     for (int i = 0; i < dataLength; ++i)
         [hexString appendString:[NSString stringWithFormat:@"%02lx", (unsigned long)dataBuffer[i]]];
-    
+
     return [NSString stringWithString:hexString];
 }
 

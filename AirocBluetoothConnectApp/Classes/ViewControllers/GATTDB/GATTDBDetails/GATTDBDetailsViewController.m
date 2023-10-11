@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -63,7 +63,7 @@
     MRHexKeyboard *hexKeyboard;
     UIAlertController *hexDialog, *asciiDialog;
     UITextField *hexDialogTextField, *asciiDialogTextField;
-    
+
     void(^characteristicWriteCompletionHandler)(BOOL success,NSError *error);
 }
 
@@ -138,25 +138,25 @@
 -(void) initView
 {
     // update characteristic and service name labels
-    
+
     _serviceNameLabel.text = [ResourceHandler getServiceNameForUUID:[[CyCBManager sharedManager] myService].UUID];
     _characteristicNameLabel.text = [ResourceHandler getCharacteristicNameForUUID:[[CyCBManager sharedManager] myCharacteristic].UUID];
-    
+
     // Adding buttons
-    
+
     _readButtonCentreXConstraint.constant = 2 *self.view.frame.size.width;
     _writeButtonCentreXConstraint.constant = 2 *self.view.frame.size.width;
     _notifyButtonCentreXConstraint.constant = 2 *self.view.frame.size.width;
     _indicateButtonCentreXConstraint.constant = 2 *self.view.frame.size.width;
-    
+
     int propertyCount = (int)[[CyCBManager sharedManager] characteristicProperties].count;
     int buttonWidth = self.view.frame.size.width/propertyCount;
     float centerXConstant;
-    
+
     /* Setting the property button position and width */
-    
+
     centerXConstant = -1 *((buttonWidth * (propertyCount - 1))*0.5);
-    
+
     for (NSString *property in [[CyCBManager sharedManager] characteristicProperties])
     {
         if ([property isEqual:READ])
@@ -164,18 +164,18 @@
             _readButtonCentreXConstraint.constant = centerXConstant;
             _readButtonWidthConstraint.constant = buttonWidth;
         }
-        
+
         if ([property isEqual:WRITE])
         {
             _writeButtonCentreXConstraint.constant = centerXConstant;
             _writeButtonWidthConstraint.constant = buttonWidth;
         }
-        
+
         if ([property isEqual:NOTIFY])
         {
             _notifyButtonCentreXConstraint.constant = centerXConstant;
             _notifyButtonWidthConstraint.constant = buttonWidth;
-            
+
             if ([[CyCBManager sharedManager] myCharacteristic].isNotifying)
             {
                 _notifyButton.selected = YES;
@@ -185,12 +185,12 @@
                 _notifyButton.selected = NO;
             }
         }
-        
+
         if ([property isEqual:INDICATE])
         {
             _indicateButtonCentreXConstraint.constant = centerXConstant;
             _indicateButtonWidthConstraint.constant = buttonWidth;
-            
+
             if ([[CyCBManager sharedManager] myCharacteristic].isNotifying)
             {
                 _indicateButton.selected = YES;
@@ -200,7 +200,7 @@
                 _indicateButton.selected = NO;
             }
         }
-        
+
         centerXConstant += buttonWidth;
     }
 }
@@ -259,13 +259,13 @@
     else {
         [hexKeyboard changeViewFrameSizeToFrame:CGRectMake(0, 0, self.view.frame.size.width, KEYBOARD_HEIGHT)];
     }
-    
+
     if (!hexDialog) {
         hexDialog = [UIAlertController alertWithTitle:LOCALIZEDSTRING(@"enterHexAlert") message:@"" delegate:self cancelButtonTitle:OPT_CANCEL otherButtonTitles:OPT_OK, nil];
         hexDialog.tag = HEX_ALERTVIEW_TAG;
         [hexDialog addTextFieldWithConfigurationHandler:nil];
     }
-    
+
     hexDialogTextField = hexDialog.textFields[0];
     hexDialogTextField.inputView = [hexKeyboard initWithTextField:hexDialogTextField];
     hexDialogTextField.text = [NSString stringWithString:_hexValueTextField.text];
@@ -282,13 +282,13 @@
  *
  */
 -(void) showASCIIKeyboard {
-    
+
     if (!asciiDialog) {
         asciiDialog = [UIAlertController alertWithTitle:LOCALIZEDSTRING(@"enterASCIIAlert") message:@"" delegate:self cancelButtonTitle:OPT_CANCEL otherButtonTitles:OPT_OK, nil];
         asciiDialog.tag = ASCII_ALERTVIEW_TAG;
         [asciiDialog addTextFieldWithConfigurationHandler:nil];
     }
-    
+
     asciiDialogTextField = asciiDialog.textFields[0];
     asciiDialogTextField.text = _ASCIIValueTextField.text;
     [asciiDialog presentInParent:nil];
@@ -304,6 +304,10 @@
 {
     if (!sender.selected)
     {
+        /*Indicate and notify buttons should be mutually exclusive. If Notify button was selected, Indicate should be turned off*/
+        if (_indicateButton.selected)
+            [self indicateButtonClicked:_indicateButton];
+
         sender.selected = YES;
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:[[CyCBManager sharedManager] myCharacteristic]];
         [self logButtonAction:START_NOTIFY];
@@ -326,6 +330,10 @@
 {
     if (!sender.selected)
     {
+        /*Indicate and notify buttons should be mutually exclusive. If Indicate button was selected, Notify should be turned off*/
+        if (_notifyButton.selected)
+            [self notifyButtonClicked:_notifyButton];
+
         sender.selected = YES;
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:[[CyCBManager sharedManager] myCharacteristic]];
         [self logButtonAction:START_INDICATE];
@@ -392,7 +400,7 @@
                     if (sself->hexKeyboard.orientation == UIDeviceOrientationFaceUp  && sself->hexKeyboard.isPresent) {
                         sself->hexKeyboard.orientation = [UIDevice currentDevice].orientation;
                     }
-                    
+
                     if ([UIDevice currentDevice].orientation != UIDeviceOrientationFaceUp && sself->hexKeyboard.orientation != [UIDevice currentDevice].orientation && sself->hexKeyboard.isPresent) {
                         [sself->hexKeyboard changeViewFrameSizeToFrame:CGRectMake(0, 0, sself.view.frame.size.width, KEYBOARD_HEIGHT)];
                         sself->hexKeyboard.orientation = [UIDevice currentDevice].orientation;
@@ -421,7 +429,7 @@
 -(void) peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
     if (error == nil) {
-        
+
         if (characteristic == [[CyCBManager sharedManager] myCharacteristic])
         {
             NSData *data = [characteristic value];
@@ -431,7 +439,7 @@
             }
             NSString *ASCIIValue = [Utilities ASCIIStringFromData:characteristic.value];
             [self updateUIWithHexValue:hexValue ASCIIValue:ASCIIValue];
-            
+
             if ([[CyCBManager sharedManager] myCharacteristic].isNotifying)
             {
                 if (_indicateButton.selected)
@@ -468,7 +476,7 @@
         else
         {
             [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:[[CyCBManager sharedManager] myService].UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:[[CyCBManager sharedManager] myCharacteristic].UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@- %@%@",WRITE_REQUEST_STATUS,WRITE_ERROR,[error.userInfo objectForKey:NSLocalizedDescriptionKey]]];
-            
+
             characteristicWriteCompletionHandler(NO,error);
         }
     }
@@ -486,20 +494,20 @@
     if (alertController.tag == HEX_ALERTVIEW_TAG) {
         if (buttonIndex == alertController.firstOtherButtonIndex) { //OK button
             UITextField *textField = [[alertController textFields] objectAtIndex:0];
-            
+
             //Apply padding with 0 if necessary
             textField.text = [textField.text decoratedHexStringLSB:YES];
-            
+
             NSString *hexString = textField.text;
             NSData *writeData = [Utilities dataFromHexString:[hexString undecoratedHexString]];
-            
+
             if (writeData.length) {
                 NSString *ASCIIString = [Utilities ASCIIStringFromData:writeData];
-                
+
                 // Write data to the device
                 [self logOperation:WRITE_REQUEST forCharacteristic:[[CyCBManager sharedManager] myCharacteristic] withData:writeData];
                 [self writeCharacteristic:[[CyCBManager sharedManager] myCharacteristic] data:writeData completionHandler:^(BOOL success, NSError *error) {
-                    
+
                     if (success) {
                         [self updateUIWithHexValue:hexString ASCIIValue:ASCIIString];
                     } else {
@@ -516,12 +524,12 @@
             NSString *asciiString = textField.text;
             NSString *hexString = [asciiString asciiToHex];
             NSData *writeData = [Utilities dataFromHexString:[hexString undecoratedHexString]];
-            
+
             if (writeData.length) {
                 // Write data to the device
                 [self logOperation:WRITE_REQUEST forCharacteristic:[[CyCBManager sharedManager] myCharacteristic] withData:writeData];
                 [self writeCharacteristic:[[CyCBManager sharedManager] myCharacteristic] data:writeData completionHandler:^(BOOL success, NSError *error) {
-                    
+
                     if (success) {
                         [self updateUIWithHexValue:hexString ASCIIValue:asciiString];
                     } else {
@@ -602,11 +610,11 @@
 #pragma mark - UITextfield delegate
 
 -(BOOL)textFieldShouldBeginEditing:(UITextField *)textField{
-    
+
     if (!([[CyCBManager sharedManager] myCharacteristic].properties & CBCharacteristicPropertyWrite || [[CyCBManager sharedManager] myCharacteristic].properties & CBCharacteristicPropertyWriteWithoutResponse)) {
         return NO;
     }
-    
+
     if (textField.tag == ASCIIT_TEXFIELD_TAG) {
         [self showASCIIKeyboard];
         return NO;
@@ -618,7 +626,7 @@
 }
 
 -(BOOL)textFieldShouldReturn:(UITextField *)textField{
-    
+
     [textField resignFirstResponder];
     return NO;
 }

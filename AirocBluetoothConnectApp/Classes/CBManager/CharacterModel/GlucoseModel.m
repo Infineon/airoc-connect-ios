@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -59,7 +59,7 @@
 {
     void(^cbCharacteristicHandler)(BOOL success, NSError *error);
     void(^cbcharacteristicDiscoverHandler)(BOOL success, NSError *error);
-    
+
     CBCharacteristic *glucoseMeasurementChar, *recordAccessControlPointChar, *glucoseMeasurementContextChar;
 }
 
@@ -82,7 +82,7 @@
 -(void)startDiscoverChar:(void (^) (BOOL success, NSError *error))handler
 {
     cbcharacteristicDiscoverHandler = handler;
-    
+
     [[CyCBManager sharedManager] setCbCharacteristicDelegate:self];
     [[[CyCBManager sharedManager] myPeripheral] discoverCharacteristics:nil forService:[[CyCBManager sharedManager] myService]];
 }
@@ -106,25 +106,25 @@
  */
 
 -(void) setCharacteristicUpdates{
-    
+
     if (glucoseMeasurementChar) {
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:glucoseMeasurementChar];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:GLUCOSE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:GLUCOSE_MEASUREMENT_CHARACTERISTIC_UUID] descriptor:nil operation:START_NOTIFY];
     }
-    
+
     if (recordAccessControlPointChar) {
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:recordAccessControlPointChar];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:GLUCOSE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:GLUCOSE_RECORD_ACCESS_CONTROL_POINT_UUID] descriptor:nil operation:START_INDICATE];
     }
-    
+
     if(glucoseMeasurementContextChar){
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:glucoseMeasurementContextChar];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:GLUCOSE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:GLUCOSE_MEASUREMENT_CONTEXT_UUID] descriptor:nil operation:START_NOTIFY];
     }
-        
+
 }
 
 /*!
@@ -134,10 +134,10 @@
  */
 
 -(void) writeRACPCharacteristicWithValueString:(NSString *)Value{
-    
+
     NSData *dataToWrite = [Utilities dataFromHexString:Value];
     if (recordAccessControlPointChar != nil) {
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:GLUCOSE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:GLUCOSE_RECORD_ACCESS_CONTROL_POINT_UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@%@",WRITE_REQUEST,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:dataToWrite]]];
 
         [[[CyCBManager sharedManager] myPeripheral] writeValue:dataToWrite forCharacteristic:recordAccessControlPointChar type:CBCharacteristicWriteWithResponse];
@@ -151,7 +151,7 @@
  */
 
 -(void) removePreviousRecords{
-   
+
     [_contextInfoArray removeAllObjects];
     [_glucoseRecords removeAllObjects];
     [_recordNameArray removeAllObjects];
@@ -170,21 +170,21 @@
             [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:NO forCharacteristic:glucoseMeasurementChar];
         }
     }
-   
+
     if (recordAccessControlPointChar) {
         if (recordAccessControlPointChar.isNotifying) {
              [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:GLUCOSE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:GLUCOSE_RECORD_ACCESS_CONTROL_POINT_UUID] descriptor:nil operation:STOP_INDICATE];
             [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:NO forCharacteristic:recordAccessControlPointChar];
         }
     }
-    
+
     if (glucoseMeasurementContextChar) {
         if (glucoseMeasurementContextChar.isNotifying) {
              [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:GLUCOSE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:GLUCOSE_MEASUREMENT_CONTEXT_UUID] descriptor:nil operation:STOP_NOTIFY];
             [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:NO forCharacteristic:glucoseMeasurementContextChar];
         }
     }
-    
+
 }
 
 
@@ -219,7 +219,7 @@
                 glucoseMeasurementContextChar = aChar;
             }
         }
-        
+
         if (glucoseMeasurementChar || glucoseMeasurementContextChar || recordAccessControlPointChar) {
             cbcharacteristicDiscoverHandler(YES,nil);
         }
@@ -249,10 +249,10 @@
                 [_glucoseRecords removeObject:characteristic.value];
                 [_recordNameArray removeObject:[self getRecordNameFromcharacteristicValue:characteristic.value]];
             }
-            
+
             [_glucoseRecords addObject:characteristic.value];
             [_recordNameArray addObject:[self getRecordNameFromcharacteristicValue:characteristic.value]];
-            
+
             [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:GLUCOSE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:GLUCOSE_MEASUREMENT_CHARACTERISTIC_UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:characteristic.value]]];
 
         }
@@ -261,11 +261,11 @@
             if (![_contextInfoArray containsObject:characteristic.value]) {
                 [_contextInfoArray addObject:characteristic.value];
             }
-            
+
             [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:GLUCOSE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:GLUCOSE_MEASUREMENT_CONTEXT_UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:characteristic.value]]];
         }
         else if ([characteristic.UUID isEqual:GLUCOSE_RECORD_ACCESS_CONTROL_POINT_UUID]){
-            
+
             [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:GLUCOSE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:GLUCOSE_RECORD_ACCESS_CONTROL_POINT_UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",INDICATE_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:characteristic.value]]];
         }
         if(cbCharacteristicHandler){
@@ -283,10 +283,10 @@
 
 -(void)peripheral:(CBPeripheral *)peripheral didWriteValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
 {
-   
+
     if ([characteristic.UUID isEqual:GLUCOSE_RECORD_ACCESS_CONTROL_POINT_UUID]) {
         if (error == nil) {
-            
+
             [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@- %@",WRITE_REQUEST_STATUS,WRITE_SUCCESS]];
         }
         else
@@ -308,17 +308,17 @@
     NSData *charData = characteristicValue;
     uint8_t *dataPointer = (uint8_t *)[charData bytes];
     uint8_t flags = dataPointer[0];
-    
+
     NSMutableDictionary *dataDict = [NSMutableDictionary dictionary];
     int16_t timeOffset = 0;
-    
+
     // Get the sequence number
     dataPointer++;
-    
+
     uint16_t sequenceNumber = (uint16_t) CFSwapInt16LittleToHost(*(uint16_t *) dataPointer);
     [dataDict setObject:[NSNumber numberWithUnsignedInteger:sequenceNumber] forKey:SEQUENCE_NUMBER];
     // Get date
-    
+
     dataPointer+=2;
     uint16_t year = CFSwapInt16LittleToHost(*(uint16_t*)dataPointer); dataPointer += 2;
     uint8_t month = *(uint8_t*)dataPointer; dataPointer++;
@@ -326,16 +326,16 @@
     uint8_t hour = *(uint8_t*)dataPointer; dataPointer++;
     uint8_t min = *(uint8_t*)dataPointer; dataPointer++;
     uint8_t sec = *(uint8_t*)dataPointer; dataPointer++;
-    
+
     NSString * dateString = [NSString stringWithFormat:@"%d %d %d %d %d %d", year, month, day, hour, min, sec];
-    
+
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat: @"yyyy MM dd HH mm ss"];
     NSDate* date = [dateFormat dateFromString:dateString];
-    
+
     if (flags & 0x01) {
         // Time Offset Present
-        
+
         timeOffset = CFSwapInt16LittleToHost(*(int16_t *) dataPointer);
         dataPointer= dataPointer + 2;
     }
@@ -344,65 +344,65 @@
         date = [date dateByAddingTimeInterval:timeOffset * 60];
     }
     /*EEE for day, yyyy for Year, dd for date, MM for month*/
-    
+
     [dateFormat setDateFormat:@"yyyy MMM dd"];
     NSString* dateFormattedString = [dateFormat stringFromDate:date];
-    
+
     [dateFormat setDateFormat:@"hh:mm:ss"];
     NSString* timeFormattedString = [dateFormat stringFromDate:date];
-    
-    
+
+
     if( dateFormattedString && timeFormattedString )
     {
         NSString *timeString = [NSString stringWithFormat:@"%@ %@", dateFormattedString, timeFormattedString];
         [dataDict setObject:timeString forKey:BASE_TIME];
     }
-    
-    
+
+
     // Checking whether Glucose concentration,type or sample location present
-    
+
     if (flags & 0x02)
     {
         // Checking Glucose concentration unit
-        
+
         float concentrationValue;
-        
+
         if (!(flags & 0x04))
         {
             // Unit is kg/L
-            
+
             [dataDict setObject:CONCENTRATION_UNIT_IN_KG forKey:CONCENTRATION_UNIT];
-            
+
             int16_t tempData = (uint16_t)CFSwapInt16LittleToHost(*((uint16_t *) dataPointer));
             concentrationValue = [Utilities convertSFLOATFromData:tempData];
-            
+
             dataPointer +=2;
         }
         else
         {
             // Unit is mol/L
-            
+
             [dataDict setObject:CONCENTRATION_UNIT_IN_MOL forKey:CONCENTRATION_UNIT];
-            
+
             int16_t tempData = (uint16_t)CFSwapInt16LittleToHost(*((uint16_t *) dataPointer));
             concentrationValue = [Utilities convertSFLOATFromData:tempData];
             dataPointer +=2;
         }
-        
+
         [dataDict setObject:[NSString stringWithFormat:@"%f",concentrationValue] forKey:CONCENTRATION_VALUE];
-        
+
         // Get type
-        
+
         uint8_t tempValue = *(uint8_t *)dataPointer;
         uint8_t typeValue = tempValue & 0x0F;
         [dataDict setObject:[self getTypeNameForValue:typeValue] forKey:TYPE];
-        
+
         // Get sample location
-        
+
         uint8_t locationValue = (tempValue >> 4) & 0x0F;
         [dataDict setObject:[self getSampleLocationForValue:locationValue] forKey:SAMPLE_LOCATION];
     }
-    
+
     // Checking whether the context information is available
     if (flags & 0x10) {
         [dataDict setObject:[NSNumber numberWithBool:YES] forKey:CONTEXT_INFO_PRESENT];
@@ -423,108 +423,108 @@
 
 -(NSMutableDictionary *) getGlucoseContextInfoFromData:(NSData *) characteristicValue
 {
-    
+
     NSMutableDictionary *contextDataDict = [NSMutableDictionary dictionary];
-    
+
     uint8_t *dataPointer = (uint8_t *) [characteristicValue bytes];
     uint8_t flags = dataPointer[0];
-    
+
     // Get the sequence number
     dataPointer++;
-    
+
     uint16_t sequenceNumber = (uint16_t) CFSwapInt16LittleToHost(*(uint16_t *) dataPointer);
     [contextDataDict setObject:[NSNumber numberWithUnsignedInteger:sequenceNumber] forKey:SEQUENCE_NUMBER];
-    
+
     dataPointer += 2;
     // Checking Carbohydrate ID And Carbohydrate Present
-    
+
     if (flags & 01) {
-        
+
         dataPointer = dataPointer + 1;
         uint8_t carboHydrateID = *(uint8_t *)dataPointer;
         [contextDataDict setObject:[self getCarbohydrateIDForValue:carboHydrateID] forKey:CARBOHYDARATE_ID];
-        
+
         // Getting carbohydrate in units of Kg
         dataPointer++;
-        
+
         int16_t carbohydrateData = (int16_t)CFSwapInt16LittleToHost(*(int16_t *) dataPointer);
         float carbohydrate = [Utilities convertSFLOATFromData:carbohydrateData];
-        
+
         dataPointer = dataPointer + 2;
         [contextDataDict setObject:[NSString stringWithFormat:@"%f Kg",carbohydrate] forKey:CARBOHYDARATE];
     }
-    
+
     // Checking meal present
-    
+
     if (flags & 0x02) {
-        
+
         uint8_t mealValue = *(uint8_t *)dataPointer;
         dataPointer++;
         [contextDataDict setObject:[self getMealInfoForValue:mealValue] forKey:MEAL];
     }
-    
+
     // Checking Tester-Health Present
-    
+
     if (flags & 0x04) {
-        
+
         uint8_t tempValue = *(uint8_t *)dataPointer;
         uint8_t testerValue = (tempValue & 0x0F);
         [contextDataDict setObject:[self getTesterInfo:testerValue] forKey:TESTER];
-        
+
         uint8_t healthValue = ((tempValue >> 4) & 0x0F);
         [contextDataDict setObject:[self getMealInfoForValue:healthValue] forKey:HEALTH];
         dataPointer++;
     }
-    
+
     // Checking Exercise Duration And Exercise Intensity Present
-    
+
     if (flags & 0x08) {
-        
+
         uint16_t exerciseduration = CFSwapInt16LittleToHost(*(uint16_t *) dataPointer);
         [contextDataDict setObject:[NSString stringWithFormat:@"%d %@",exerciseduration,EXERCISE_DURATION_UNIT] forKey:EXERCISE_DURATION];
-        
+
         dataPointer = dataPointer + 2;
-        
+
         uint8_t exerciseIntensity = *(uint8_t *)dataPointer;
         [contextDataDict setObject:[NSString stringWithFormat:@"%d",exerciseIntensity] forKey:EXERCISE_INTENSITY];
-        
+
         dataPointer++;
     }
-    
+
     // Checking Medication ID And Medication Present
-    
+
     float medicationValue = 0.0;
-    
+
     if (flags & 0x10) {
-        
+
         uint8_t medicationID = *(uint8_t *) dataPointer;
         [contextDataDict setObject:[self getMedicationIDInfoForValue:medicationID] forKey:MEDICATION_ID];
-        
+
         dataPointer++;
-        
+
         int16_t medicationData = (int16_t)CFSwapInt16LittleToHost(*(int16_t *) dataPointer);
         medicationValue = [Utilities convertSFLOATFromData:medicationData];
-        
+
         dataPointer = dataPointer + 2;
     }
-    
+
     // Checking Medication Value Units
-    
+
     NSString *medicationUnit = @"";
-    
+
     if (flags & 0x20) {
         medicationUnit = MEDICATION_UNIT_LITRE;
     }
     else{
         medicationUnit = MEDICATION_UNIT_KG;
     }
-    
+
     if (medicationValue > 0.0) {
         [contextDataDict setObject:[NSString stringWithFormat:@"%F %@",medicationValue,medicationUnit] forKey:MEDICATION];
     }
-    
+
     // CHECKING HbA1c Present
-    
+
     if (flags & 0x04) {
         int16_t diebeticsData = (int16_t) CFSwapInt16LittleToHost(*(int16_t *) dataPointer);
         float hbA1cValue = [Utilities convertSFLOATFromData:diebeticsData];
@@ -535,56 +535,56 @@
 
 
 -(NSString *)getRecordNameFromcharacteristicValue:(NSData *)characteristicValue{
-    
+
     NSString *recordName = @"";
     NSString *timeString = @"";
     uint8_t *dataPointer = (uint8_t *)[characteristicValue bytes];
     uint8_t flags = dataPointer[0];
-    
+
     dataPointer++;
     uint16_t sequenceNumber = CFSwapInt16LittleToHost(*(uint16_t *)dataPointer);
     dataPointer = dataPointer + 2;
-    
+
     uint16_t year = CFSwapInt16LittleToHost(*(uint16_t*)dataPointer); dataPointer += 2;
     uint8_t month = *(uint8_t*)dataPointer; dataPointer++;
     uint8_t day = *(uint8_t*)dataPointer; dataPointer++;
     uint8_t hour = *(uint8_t*)dataPointer; dataPointer++;
     uint8_t min = *(uint8_t*)dataPointer; dataPointer++;
     uint8_t sec = *(uint8_t*)dataPointer; dataPointer++;
-    
+
     int16_t timeOffset = 0;
     if (flags & 0x01) {
         timeOffset = CFSwapInt16LittleToHost(*(int16_t *) dataPointer);
     }
-    
+
     // Adding the time offset with base time
-    
+
     NSString * dateString = [NSString stringWithFormat:@"%d %d %d %d %d %d", year, month, day, hour, min, sec];
-    
+
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat: @"yyyy MM dd HH mm ss"];
     NSDate* date = [dateFormat dateFromString:dateString];
-    
+
     if (timeOffset > 0) {
         date = [date dateByAddingTimeInterval:timeOffset * 60];
     }
-    
+
     /*EEE for day, yyyy for Year, dd for date, MM for month*/
-    
+
     [dateFormat setDateFormat:@"yyyy MMM dd"];
     NSString* dateFormattedString = [dateFormat stringFromDate:date];
-    
+
     [dateFormat setDateFormat:@"hh:mm:ss"];
     NSString* timeFormattedString = [dateFormat stringFromDate:date];
-    
-    
+
+
     if( dateFormattedString && timeFormattedString )
     {
         timeString = [NSString stringWithFormat:@"%@ %@", dateFormattedString, timeFormattedString];
     }
 
     recordName = [NSString stringWithFormat:@"%d - %@",sequenceNumber,timeString];
-    
+
     return recordName;
 }
 
@@ -599,13 +599,13 @@
 -(NSString *) getTypeNameForValue:(uint8_t)value
 {
     NSString *typeName = nil;
-    
+
     switch (value)
     {
         case 0x00:
             typeName = RESERVED_FOR_FUTURE_USE;
             break;
-            
+
         case 0x01:
             typeName = CAPILLARY_WHOLE_BLOOD;
             break;
@@ -640,7 +640,7 @@
             typeName = RESERVED_FOR_FUTURE_USE;
             break;
     }
-    
+
     return typeName;
 }
 
@@ -653,7 +653,7 @@
 -(NSString *) getSampleLocationForValue:(uint8_t)value
 {
     NSString *locationName = nil;
-    
+
     switch (value)
     {
         case 0x00:
@@ -674,12 +674,12 @@
         case 0x0F:
             locationName = LOCATION_UNAVAILABLE;
             break;
-        
+
         default:
             locationName = RESERVED_FOR_FUTURE_USE;
             break;
     }
-    
+
     return locationName;
 }
 
@@ -693,9 +693,9 @@
  */
 
 -(NSString *) getCarbohydrateIDForValue:(uint8_t)value{
-    
+
     NSString *carbohydateID = @"";
-    
+
     switch (value) {
         case 0:
             carbohydateID = RESERVED_FOR_FUTURE_USE;
@@ -736,9 +736,9 @@
  */
 
 -(NSString *) getMealInfoForValue:(uint8_t)value{
-    
+
     NSString *mealInfo = @"";
-    
+
     switch (value) {
         case 0:
             mealInfo = RESERVED_FOR_FUTURE_USE;
@@ -763,7 +763,7 @@
             mealInfo = RESERVED_FOR_FUTURE_USE;
             break;
     }
-    
+
     return mealInfo;
 }
 
@@ -774,9 +774,9 @@
  *
  */
 -(NSString *) getTesterInfo:(uint8_t)Value{
-    
+
     NSString *testerInfo = @"";
-    
+
     switch (Value) {
         case 0:
             testerInfo = RESERVED_FOR_FUTURE_USE;
@@ -807,9 +807,9 @@
  *
  */
 -(NSString *) getHealthInfoForValue:(uint8_t)value{
-    
+
     NSString *healthInfo = @"";
-    
+
     switch (value) {
         case 0:
             healthInfo = RESERVED_FOR_FUTURE_USE;
@@ -846,9 +846,9 @@
  *
  */
 -(NSString *) getMedicationIDInfoForValue:(uint8_t)value{
-    
+
     NSString *medicationIdInfo = @"";
-    
+
     switch (value) {
         case 0:
             medicationIdInfo = RESERVED_FOR_FUTURE_USE;
@@ -869,7 +869,7 @@
             medicationIdInfo = RESERVED_FOR_FUTURE_USE;
             break;
     }
-    
+
     return medicationIdInfo;
 }
 

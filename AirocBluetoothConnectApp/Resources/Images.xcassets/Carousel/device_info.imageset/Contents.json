@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "carousel_device_information.svg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

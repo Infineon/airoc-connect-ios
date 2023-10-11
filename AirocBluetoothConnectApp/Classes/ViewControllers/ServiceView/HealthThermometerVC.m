@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -46,7 +46,7 @@
 @interface HealthThermometerVC ()<lineChartDelegate>
 {
     ThermometerModel *mThermometerModel;
-    
+
     KLCPopup* kPopup;
     MyLineChart *myChart;
     NSMutableArray *healthDataArray;
@@ -70,15 +70,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+
     healthDataArray = [NSMutableArray array];
     timeDataArray = [NSMutableArray array];
-    
+
     [self initializeView];
-    
+
     // initialize thermometer model
     [self initThermometerModel];
-    
+
     startTime = [NSDate date];
     previousTimeInterval = 0;
     xAxisTimeInterval = 1.0;
@@ -98,7 +98,7 @@
 -(void) viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self])
     {
         [mThermometerModel stopUpdate];   // stop receiving characteristic value when the user exits the screen
@@ -134,7 +134,7 @@
         mThermometerModel = [[ThermometerModel alloc] init];
     }
     [mThermometerModel startDiscoverChar:^(BOOL success, NSError *error) {
-        
+
         if (success)
         {
             // Get the characteristic values if found successfully
@@ -181,30 +181,30 @@
         _temperatureValueLabel.text =[NSString stringWithFormat:@"%@", mThermometerModel.tempStringValue];
         _temperatureUnitLabel.text = [NSString stringWithFormat:@"%@", mThermometerModel.mesurementType];
     }
-    
+
     if (nil == mThermometerModel.tempType) {
         _sensorLocationLabel.text = @"---";
     } else {
         _sensorLocationLabel.text = [NSString stringWithFormat:@"%@",mThermometerModel.tempType];
     }
-    
+
     // Handling the values for graph update
-    
+
     if([mThermometerModel.tempStringValue floatValue])
     {
         NSTimeInterval timeInterval = fabs([startTime timeIntervalSinceNow]);
         [timeDataArray addObject:@(timeInterval)];
-        
+
         if (previousTimeInterval == 0)
         {
             previousTimeInterval = timeInterval;
         }
-        
+
         if (timeInterval > previousTimeInterval)
         {
             xAxisTimeInterval = timeInterval - previousTimeInterval;
         }
-        
+
         if ([_temperatureUnitLabel.text isEqualToString:@"°F"])
         {
             float celciusValue = ([mThermometerModel.tempStringValue floatValue] - 32) * 5 / 9;
@@ -214,7 +214,7 @@
         {
             [healthDataArray addObject:@([mThermometerModel.tempStringValue floatValue])];
         }
-        
+
         if(myChart && kPopup.isShowing)
         {
             [myChart setXaxisScaleWithValue:nearbyintf(xAxisTimeInterval)];
@@ -243,21 +243,20 @@
     [myChart addXLabel:TIME yLabel:TEMPERATURE_YLABEL];
     [myChart setXaxisScaleWithValue:nearbyintf(xAxisTimeInterval)];
     myChart.delegate = self;
-    
+
     if([timeDataArray count])
     {
         [self checkGraphPointsCount];
         [myChart updateLineGraph:timeDataArray Y:healthDataArray ];
         KLCPopupLayout layout = KLCPopupLayoutMake(KLCPopupHorizontalLayoutCenter,
-                                                   KLCPopupVerticalLayoutBottom);
-        
+                                                   KLCPopupVerticalLayoutCenter);
+
         kPopup = [KLCPopup popupWithContentView:myChart
                                        showType:KLCPopupShowTypeBounceIn
                                     dismissType:KLCPopupDismissTypeBounceOut
                                        maskType:KLCPopupMaskTypeDimmed
                        dismissOnBackgroundTouch:YES
                           dismissOnContentTouch:NO];
-        
         [kPopup showWithLayout:layout];
     }
     else
@@ -272,14 +271,14 @@
  *
  */
 -(void) checkGraphPointsCount{
-    
+
     if (timeDataArray.count > MAX_GRAPH_POINTS) {
         timeDataArray = [[timeDataArray subarrayWithRange:NSMakeRange(timeDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
         myChart.chartView.setXmin = YES;
     }else{
         myChart.chartView.setXmin = NO;
     }
-    
+
     if (healthDataArray.count > MAX_GRAPH_POINTS) {
         healthDataArray = [[healthDataArray subarrayWithRange:NSMakeRange(healthDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
     }
@@ -297,7 +296,7 @@
 {
     UIImage *screenShot = [Utilities captureScreenShot];
     [kPopup dismiss:YES];
-    
+
     CGRect rect = [(UIButton *)sender frame];
     CGRect newRect = CGRectMake(rect.origin.x, rect.origin.y + (self.view.frame.size.height/2), rect.size.width, rect.size.height);
     [self showActivityPopover:[self saveImage:screenShot] rect:newRect excludedActivities:nil];

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -78,9 +78,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+
     [self initView];
-    
+
     // Initialize find me model
     [self initFindMeModel];
 }
@@ -109,7 +109,7 @@
 }
 /*
  #pragma mark - Navigation
- 
+
  // In a storyboard-based application, you will often want to do a little preparation before navigation
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
  // Get the new view controller using [segue destinationViewController].
@@ -130,14 +130,14 @@
         [self.view layoutIfNeeded];
     }
     whiteCircleRefHeight = _findMeWhiteCircleHeightConstraint.constant;
-    
+
     // Set border color for the labels
-    _linkLossAlertSelectionButton.layer.borderColor = [UIColor blueColor].CGColor;
+    _linkLossAlertSelectionButton.layer.borderColor = COLOR_PRIMARY.CGColor;
     _linkLossAlertSelectionButton.layer.borderWidth = 1.0;
-    
-    _ImmediateAlertSelectionButton.layer.borderColor = [UIColor blueColor].CGColor;
+
+    _ImmediateAlertSelectionButton.layer.borderColor = COLOR_PRIMARY.CGColor;
     _ImmediateAlertSelectionButton.layer.borderWidth = 1.0;
-    
+
     // Hiding the views initially
     _transmissionPowerLevelView.hidden = YES;
     _immediateAlertViewHeightConstraint.constant = 0;
@@ -261,18 +261,18 @@
             if (success) {
                 @synchronized(sself->mFindMeModel) {
                     sself.transmissionPowerLevelValue.text = [NSString stringWithFormat:@"%0.f", sself->mFindMeModel.transmissionPowerValue];
-                    
+
                     // Calculating the constraint value
                     float tempValue = sself->mFindMeModel.transmissionPowerValue + 80;
-                    
+
                     if (tempValue <0) {
                         tempValue = tempValue * -1;
                     }
-                    
+
                     // White circle animation
                     float constraintValue = tempValue * (sself->whiteCircleRefHeight/100);
                     sself.findMeWhiteCircleHeightConstraint.constant = constraintValue;
-                    
+
                     [UIView animateWithDuration:0.5 animations:^{
                         [self.view layoutIfNeeded];
                     }];

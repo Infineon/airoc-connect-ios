@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -58,7 +58,7 @@
 
 -(void)viewDidLoad {
     [super viewDidLoad];
-    
+
     // Add buttons for selecting the capsense services present in the profile
     [self performSelector:@selector(updateUI) withObject:nil afterDelay:0.1];
 }
@@ -81,18 +81,21 @@
         if([capChar.UUID isEqual:CAPSENSE_BUTTON_CHARACTERISTIC_UUID] || [capChar.UUID isEqual:CUSTOM_CAPSENSE_BUTTONS_CHARACTERISTIC_UUID]) {
             buttonCharacteristic = capChar;
             _capButton.hidden = NO;
+            _capButton.contentEdgeInsets = UIEdgeInsetsMake(15, 15, 15, 15);
             _capButtonYpos.constant = [self yPos:buttonCount];
             buttonCount++;
         }
         else if([capChar.UUID isEqual:CAPSENSE_SLIDER_CHARACTERISTIC_UUID] || [capChar.UUID isEqual:CUSTOM_CAPSENSE_SLIDER_CHARACTERISTIC_UUID]) {
             sliderCharacteristic = capChar;
             _sliderButton.hidden = NO ;
+            _sliderButton.contentEdgeInsets = UIEdgeInsetsMake(15, 15, 15, 15);
             _sliderYpos.constant = [self yPos:buttonCount];
             buttonCount++;
         }
         else if([capChar.UUID isEqual:CAPSENSE_PROXIMITY_CHARACTERISTIC_UUID] || [capChar.UUID isEqual:CUSTOM_CAPSENSE_PROXIMITY_CHARACTERISTIC_UUID]) {
             proximitycharacteristic = capChar;
             _proximityButton.hidden = NO;
+            _proximityButton.contentEdgeInsets = UIEdgeInsetsMake(15, 15, 15, 15);
             _proximityYpos.constant = [self yPos:buttonCount];
             buttonCount++;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -54,7 +54,7 @@
     void (^cbCharacteristicDiscoverHandler)(BOOL success, NSError *error);
     void (^cbBootloaderCharacteristicNotificationHandler)(NSError *error, id command, unsigned char otaError);
     CBCharacteristic * bootloaderCharacteristic;
-    
+
     NSMutableArray * commandArray;
     NSString * checkSumType;
     unsigned int negotiatedGattMtu;
@@ -110,11 +110,11 @@
 -(void) enableNotificationForBootloaderCharacteristicAndSetNotificationHandler:(void (^) (NSError *error, id command, unsigned char otaCommand)) handler
 {
     cbBootloaderCharacteristicNotificationHandler = handler;
-    
+
     if (bootloaderCharacteristic != nil)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:bootloaderCharacteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:bootloaderCharacteristic.UUID] descriptor:nil operation:START_NOTIFY];
-        
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:bootloaderCharacteristic];
     }
 }
@@ -133,12 +133,12 @@
         {
             [commandArray addObject:@(commandCode)];
         }
-        
+
         NSString * serviceName = [ResourceHandler getServiceNameForUUID:bootloaderCharacteristic.service.UUID];
         NSString * characteristicName = [ResourceHandler getCharacteristicNameForUUID:bootloaderCharacteristic.UUID];
         NSString * operationInfo = [NSString stringWithFormat:@"%@%@ %@",WRITE_REQUEST,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]];
         [Utilities logDataWithService:serviceName characteristic:characteristicName descriptor:nil operation:operationInfo];
-        
+
         if (self.isWriteWithoutResponseSupported)
         {
             NSUInteger totalLength = data.length;
@@ -168,7 +168,7 @@
                     localData = [NSMutableData dataWithBytes:lastBytes length:totalLength];
                     totalLength = 0;
                 }
-                
+
                 [[[CyCBManager sharedManager] myPeripheral] writeValue:localData forCharacteristic:bootloaderCharacteristic type:CBCharacteristicWriteWithoutResponse];
             }
             while (totalLength > 0);
@@ -190,11 +190,11 @@
 {
     cbBootloaderCharacteristicNotificationHandler = nil;
     [commandArray removeAllObjects];
-    
+
     if (bootloaderCharacteristic != nil)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:bootloaderCharacteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:bootloaderCharacteristic.UUID] descriptor:nil operation:STOP_NOTIFY];
-        
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:NO forCharacteristic:bootloaderCharacteristic];
     }
 }
@@ -217,7 +217,7 @@
             if ([characteristic.UUID isEqual:BOOT_LOADER_CHARACTERISTIC_UUID])
             {
                 bootloaderCharacteristic = characteristic;
-                
+
                 if ((characteristic.properties & CBCharacteristicPropertyWriteWithoutResponse) != 0)
                 {
                     if ([peripheral respondsToSelector:@selector(maximumWriteValueLengthForType:)]) {
@@ -252,11 +252,11 @@
 -(void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
     if (error == nil) {
         if ([characteristic.UUID isEqual:BOOT_LOADER_CHARACTERISTIC_UUID]) {
+            unsigned char *bytes = (unsigned char *) [characteristic.value bytes];
+            unsigned char otaError = bytes[1];
             if (commandArray.count <= 0) {
                 NSLog(@"ERROR: BootloaderServiceModel peripheral:didUpdateValueForCharacteristic: empty commandArray");
             } else {
-                unsigned char *bytes = (unsigned char *) [characteristic.value bytes];
-                unsigned char otaError = bytes[1];
                 if (iFileVersionTypeCYACD2 == self.fileVersion) {
                     // Checking the error code from the response
                     if (SUCCESS == otaError) {
@@ -277,10 +277,6 @@
                         } else if ([[commandArray objectAtIndex:0] isEqual:@(VERIFY_APP)]) {
                             _isAppValid = NO;
                         }
-                    }
-                    if (nil != cbBootloaderCharacteristicNotificationHandler) {
-                        cbBootloaderCharacteristicNotificationHandler(error, [commandArray objectAtIndex:0], otaError);
-                        [commandArray removeObjectAtIndex:0];
                     }
                 } else { //CYACD
                     // Checking the error code from the response
@@ -311,10 +307,14 @@
                             _isProgramRowDataSuccess = NO;
                         }
                     }
-                    if (nil != cbBootloaderCharacteristicNotificationHandler) {
-                        cbBootloaderCharacteristicNotificationHandler(error, [commandArray objectAtIndex:0], otaError);
-                        [commandArray removeObjectAtIndex:0];
-                    }
+                }
+            }
+            if (nil != cbBootloaderCharacteristicNotificationHandler) {
+                if (commandArray.count <= 0) {
+                    cbBootloaderCharacteristicNotificationHandler(error, 0, otaError);
+                } else {
+                    cbBootloaderCharacteristicNotificationHandler(error, [commandArray objectAtIndex:0], otaError);
+                    [commandArray removeObjectAtIndex:0];
                 }
             }
         }
@@ -333,10 +333,10 @@
 -(void) getBootloaderDataFromCharacteristic:(CBCharacteristic *) characteristic
 {
     uint8_t *dataPointer = (uint8_t *)[characteristic.value bytes];
-    
+
     // Move to the position of data field
     dataPointer += COMMAND_PACKET_HEADER;
-    
+
     // Get silicon Id
     NSMutableString *siliconIDString = [NSMutableString stringWithCapacity:8];
     for (int i = 3; i >= 0; i--)
@@ -344,7 +344,7 @@
         [siliconIDString appendFormat:@"%02x",(unsigned int)dataPointer[i]];
     }
     _siliconIDString = siliconIDString;
-    
+
     // Get silicon Rev
     NSMutableString *siliconRevString = [NSMutableString stringWithCapacity:2];
     [siliconRevString appendFormat:@"%02x",(unsigned int)dataPointer[4]];
@@ -360,15 +360,15 @@
 -(void) getBootloaderDataFromCharacteristic_v1:(CBCharacteristic *) characteristic
 {
     uint8_t * dataPointer = (uint8_t *)[characteristic.value bytes];
-    
+
     dataPointer += COMMAND_PACKET_HEADER;
     const int siliconIdLength = 4;
     _siliconIDString = [Utilities HEXStringLittleFromByteArray:dataPointer ofSize:siliconIdLength];
-    
+
     dataPointer += siliconIdLength;
     const int siliconRevLength = 1;
     _siliconRevString = [Utilities HEXStringLittleFromByteArray:dataPointer ofSize:siliconRevLength];
-    
+
     dataPointer += siliconRevLength;
     const int bootloaderVersionLength = 3;
     _bootloaderVersionString = [Utilities HEXStringLittleFromByteArray:dataPointer ofSize:bootloaderVersionLength];
@@ -383,13 +383,13 @@
 -(void) getFlashDataFromCharacteristic:(CBCharacteristic *)charatceristic
 {
     uint8_t * dataPointer = (uint8_t *)[charatceristic.value bytes];
-    
+
     dataPointer += 4;
 
     uint16_t firstRowNumber = CFSwapInt16LittleToHost(*(uint16_t *) dataPointer);
-    
+
     dataPointer += 2;
-    
+
     uint16_t lastRowNumber = CFSwapInt16LittleToHost(*(uint16_t *) dataPointer);
 
     _startRowNumber = firstRowNumber;
@@ -405,7 +405,7 @@
 -(void) getRowCheckSumFromCharacteristic:(CBCharacteristic *)characteristic
 {
     uint8_t * dataPointer = (uint8_t *)[characteristic.value bytes];
-    
+
     _checksum = dataPointer[4];
 }
 
@@ -438,12 +438,12 @@
 -(NSData *) createPacketWithCommandCode:(uint8_t)commandCode dataLength:(unsigned short)dataLength data:(NSDictionary *)dataDict {
     int idx = 0;
     unsigned char *commandPacket =  (unsigned char *)malloc((COMMAND_PACKET_MIN_SIZE + dataLength) * sizeof(unsigned char));
-    
+
     commandPacket[idx++] = COMMAND_START_BYTE;
     commandPacket[idx++] = commandCode;
     commandPacket[idx++] = dataLength;
     commandPacket[idx++] = dataLength >> 8;
-    
+
     if (ENTER_BOOTLOADER == commandCode) {
         NSData *securityKeyData = [dataDict objectForKey:SECURITY_KEY];
         if (securityKeyData) {
@@ -452,17 +452,17 @@
             }
         }
     }
-    
+
     if (GET_APP_STATUS == commandCode) {
         NSInteger activeApp = [[dataDict objectForKey:ACTIVE_APP] integerValue];
         commandPacket[idx++] = activeApp;
     }
-    
+
     if (GET_FLASH_SIZE == commandCode) {
         uint8_t flashArrayID = [[dataDict objectForKey:FLASH_ARRAY_ID] integerValue];
         commandPacket[idx++] = flashArrayID;
     }
-    
+
     if (PROGRAM_ROW == commandCode ||  VERIFY_ROW == commandCode) {
         uint8_t flashArrayID = [[dataDict objectForKey:FLASH_ARRAY_ID] integerValue];
         unsigned short flashRowNumber = [[dataDict objectForKey:FLASH_ROW_NUMBER] integerValue];
@@ -470,35 +470,35 @@
         commandPacket[idx++] = flashRowNumber;
         commandPacket[idx++] = flashRowNumber >> 8;
     }
-    
+
     //Add the data to send to the command packet
     if (SEND_DATA == commandCode || PROGRAM_ROW == commandCode) {
         NSArray * dataArray = [dataDict objectForKey:ROW_DATA];
         for (int i = 0; i<dataArray.count; i++) {
             NSString * value = dataArray[i];
-            
+
             unsigned int outVal;
             NSScanner * scanner = [NSScanner scannerWithString:value];
             [scanner scanHexInt:&outVal];
-            
+
             unsigned short valueToWrite = (unsigned short)outVal;
             commandPacket[idx++] = valueToWrite;
         }
     }
-    
+
     if (SET_ACTIVE_APP == commandCode) {
         NSInteger activeApp = [[dataDict objectForKey:ACTIVE_APP] integerValue];
         commandPacket[idx++] = activeApp;
     }
-   
+
     unsigned short checkSum  = [self calculateChecksumWithCommandPacket:commandPacket withSize:(idx) type:checkSumType];
     commandPacket[idx++] = checkSum;
     commandPacket[idx++] = checkSum >> 8;
     commandPacket[idx++] = COMMAND_END_BYTE;
-    
+
     NSData *data = [NSData dataWithBytes:commandPacket length:(idx)];
     free(commandPacket);
-    
+
     return data;
 }
 
@@ -512,12 +512,12 @@
 {
     int idx = 0;
     unsigned char *commandPacket =  (unsigned char *)malloc((COMMAND_PACKET_MIN_SIZE + dataLength) * sizeof(unsigned char));
-    
+
     commandPacket[idx++] = COMMAND_START_BYTE;
     commandPacket[idx++] = commandCode;
     commandPacket[idx++] = dataLength;
     commandPacket[idx++] = dataLength >> 8;
-    
+
     if (ENTER_BOOTLOADER == commandCode)
     {
         uint32_t productID = [[dataDict objectForKey:PRODUCT_ID] unsignedIntValue];
@@ -530,7 +530,7 @@
     {
         uint8_t appID = [[dataDict objectForKey:APP_ID] unsignedCharValue];
         commandPacket[idx++] = appID;
-        
+
         uint32_t appStartAddr = [[dataDict objectForKey:APP_META_APP_START] unsignedIntValue];
         commandPacket[idx++] = appStartAddr;
         commandPacket[idx++] = appStartAddr >> 8;
@@ -573,15 +573,15 @@
             commandPacket[idx++] = byte;
         }
     }
-    
+
     uint16_t checkSum  = [self calculateChecksumWithCommandPacket:commandPacket withSize:(idx) type:checkSumType];
     commandPacket[idx++] = checkSum;
     commandPacket[idx++] = checkSum >> 8;
     commandPacket[idx++] = COMMAND_END_BYTE;
-    
+
     NSData *data = [NSData dataWithBytes:commandPacket length:(idx)];
     free(commandPacket);
-    
+
     return data;
 }
 
@@ -597,7 +597,7 @@
     {
         // Sum checksum
         unsigned short sum = 0;
-        
+
         for (int i = 0; i< packetSize; i++)
         {
             sum = sum + array[i];
@@ -608,13 +608,13 @@
     {
         // CRC 16
         unsigned short sum = 0xffff;
-        
+
         unsigned short tmp;
         int i;
-        
+
         if (packetSize == 0)
             return (~sum);
-        
+
         do
         {
             for (i = 0, tmp = 0x00ff & *array++; i < 8; i++, tmp >>= 1)
@@ -626,7 +626,7 @@
             }
         }
         while (--packetSize);
-        
+
         sum = ~sum;
         tmp = sum;
         sum = (sum << 8) | (tmp >> 8 & 0xFF);

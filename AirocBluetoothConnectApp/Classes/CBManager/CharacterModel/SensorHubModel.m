@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -44,17 +44,17 @@
 @interface SensorHubModel () <cbCharacteristicManagerDelegate>
 {
     NSArray *servicesArray;
-    
+
     void(^accelerometerCharactristicDiscoverHandler)(BOOL success, NSError *error);
     void(^barometerCharactristicDiscoverHandler)(BOOL success, NSError *error);
     void(^temperatureCharactristicDiscoverHandler)(BOOL success, NSError *error);
-    
+
     void (^accelerometerXYZcharacteristicHandler)(BOOL success, NSError *error);
     void (^accelerometerCharacteristicsHandler)(BOOL success, NSError *error);
-    
+
     void (^barometerPressureValueUpdationHandler)(BOOL success, NSError *error);
     void (^barometerCharacteristicsHandler)(BOOL success, NSError *error);
-    
+
     void (^temperatureValueUpdationHandler)(BOOL success, NSError *error);
     void (^temperatureCharacteristicsHandler)(BOOL success, NSError *error);
 
@@ -73,10 +73,10 @@
 {
     self = [super init];
     if (self) {
-        
+
         [[CyCBManager sharedManager] setCbCharacteristicDelegate:self];
         servicesArray = [[CyCBManager sharedManager] foundServices];
-        
+
         _accelerometer = [[AccelerometerModel alloc] init];
         _barometer = [[BarometerModel alloc] init];
         _temperatureSensor = [[TemperatureModel alloc] init];
@@ -97,7 +97,7 @@
 -(void) startDiscoverBarometerCharacteristicsWithHandler:(void (^) (BOOL success, NSError *error))handler
 {
     barometerCharactristicDiscoverHandler = handler;
-    
+
     for (CBService *service in servicesArray)
     {
         if ([service.UUID isEqual:BAROMETER_SERVICE_UUID])
@@ -118,7 +118,7 @@
 -(void) startDiscoverAccelerometerCharacteristicsWithHandler:(void (^) (BOOL success, NSError *error))handler
 {
     accelerometerCharactristicDiscoverHandler = handler;
-    
+
     for (CBService *service in servicesArray)
     {
         if ([service.UUID isEqual:ACCELEROMETER_SERVICE_UUID])
@@ -138,7 +138,7 @@
 -(void) startDiscoverTemperatureCharacteristicsWithHandler:(void (^) (BOOL success, NSError *error))handler
 {
     temperatureCharactristicDiscoverHandler = handler;
-    
+
     for (CBService *service in servicesArray)
     {
         if ([service.UUID isEqual:ANALOG_TEMPERATURE_SERVICE_UUID])
@@ -160,7 +160,7 @@
 -(void) startDiscoverImmediateAlertCharacteristicsWithHandler:(void (^) (BOOL success, NSError *error))handler
 {
     immedieteAlertCharacteristicsDiscoverHandler = handler;
-    
+
     for (CBService *service in servicesArray)
     {
         if ([service.UUID isEqual:IMMEDIATE_ALERT_SERVICE_UUID])
@@ -180,7 +180,7 @@
 -(void) startDiscoverBatteryCharacteristicsWithHandler:(void (^) (BOOL success, NSError *error))handler
 {
     batteryServiceCharacteristicsDiscoverHandler = handler;
-    
+
     for (CBService *service in servicesArray)
     {
         if ([service.UUID isEqual:BATTERY_LEVEL_SERVICE_UUID])
@@ -285,13 +285,13 @@
 {
     accelerometerXYZcharacteristicHandler = nil;
     [_accelerometer stopUpdate];
-    
+
     barometerPressureValueUpdationHandler = nil;
     [_barometer stopUpdate];
-    
+
     temperatureValueUpdationHandler = nil;
     [_temperatureSensor stopUpdate];
-    
+
 }
 
 
@@ -332,7 +332,7 @@
                 immedieteAlertCharacteristicsDiscoverHandler(YES,nil);
             }
         }
-        
+
         immedieteAlertCharacteristicsDiscoverHandler(NO,error);
     }
     else if ([service.UUID isEqual:BATTERY_LEVEL_SERVICE_UUID])
@@ -345,7 +345,7 @@
                 _batteryModel.batteryCharacterisic = aChar;
                 batteryServiceCharacteristicsDiscoverHandler(YES,nil);
             }
-            
+
         }
     }
 }
@@ -369,7 +369,7 @@
         else
         {
             [_accelerometer getValuesForAcclerometerCharacteristics:characteristic];
-            
+
             if (accelerometerCharacteristicsHandler != nil) {
                 accelerometerCharacteristicsHandler(YES,nil);
             }
@@ -377,7 +377,7 @@
     }
     else if ([characteristic.service.UUID isEqual:BAROMETER_SERVICE_UUID])
     {
-        
+
         if ([characteristic.UUID isEqual:BAROMETER_READING_CHARACTERISTIC_UUID])
         {
             [_barometer getValuesForBarometerCharacteristics:characteristic];
@@ -386,7 +386,7 @@
         else
         {
             [_barometer getValuesForBarometerCharacteristics:characteristic];
-            
+
             if (barometerCharacteristicsHandler != nil) {
                 barometerCharacteristicsHandler(YES,nil);
             }
@@ -402,7 +402,7 @@
         else
         {
             [_temperatureSensor getValuesForTemperatureCharacteristics:characteristic];
-            
+
             if (temperatureCharacteristicsHandler != nil) {
                 temperatureCharacteristicsHandler(YES,nil);
             }

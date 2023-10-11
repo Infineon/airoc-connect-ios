@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -84,15 +84,15 @@
 
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    
+
     ContextTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID];
     if (cell == nil) {
         cell = [[ContextTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellID];
     }
-    
+
     cell.contextFieldNameLabel.text = [glucoseContextItems objectAtIndex:[indexPath row]];
     cell.contextFieldValueLabel.text = [_glucoseContextDict objectForKey:[glucoseContextItems objectAtIndex:[indexPath row]]];
-    
+
     return cell;
 }
 
@@ -100,8 +100,8 @@
 #pragma mark - UITableView Delegate
 
 -(void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath{
-    
-    [tableView deselectRowAtIndexPath:indexPath animated:NO]; 
+
+    [tableView deselectRowAtIndexPath:indexPath animated:NO];
 }
 
 

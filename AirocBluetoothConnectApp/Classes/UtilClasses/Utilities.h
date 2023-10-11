@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -95,7 +95,7 @@
  *  @discussion Method that returns descriptor name for given UUID
  *
  */
-+(NSString *)getDiscriptorNameForUUID:(CBUUID *)UUID;
++(NSString *)getDescriptorNameForUUID:(CBUUID *)UUID;
 
 /*!
  *  @method getDescriptorValueInformation: andValue:
@@ -145,14 +145,6 @@
  *
  */
 +(unsigned int) getIntegerFromHexString:(NSString *)hexString;
-
-/*!
- *  @method get128BitUUIDForUUID:
- *
- *  @discussion Method that returns the 128 bit UUID
- *
- */
-+(NSString *)get128BitUUIDForUUID:(CBUUID *)UUID;
 
 /*!
  *  @method convertDataToLoggerFormat:
@@ -212,5 +204,13 @@
  *
  */
 +(uint32_t) CRC32ForByteArray:(uint8_t *)buf ofSize:(uint32_t)size;
+
+/*!
+ * @method sortDates: withNewestFirst
+ *
+ * @discussion Sorts the array with dates
+ *
+ */
++(NSArray *) sortDates:(NSArray *)inputArray withNewestFirst:(BOOL)isNewestFirst;
 
 @end

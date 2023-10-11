@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -78,16 +78,16 @@
     IBOutlet UIButton *applicationAndStackUpgradeCombinedBtn;
     IBOutlet UIButton *applicationAndStackUpgradeSeparateBtn;
     IBOutlet UIButton *startStopUpgradeBtn;
-    
+
     IBOutlet UILabel *currentOperationLabel;
     IBOutlet UILabel *firmwareFile1NameLabel;
     IBOutlet UILabel *firmwareFile2NameLabel;
     IBOutlet UILabel *firmwareFile1UpgradePercentageLabel;
     IBOutlet UILabel *firmwareFile2UpgradePercentageLabel;
-    
+
     IBOutlet UIView *firmwareFile1NameContainerView;
     IBOutlet UIView *firmwareFile2NameContainerView;
-    
+
     //Constraint Outlets for modifying UI for screen fit
     IBOutlet NSLayoutConstraint *titleLabelTopSpaceConstraint;
     IBOutlet NSLayoutConstraint *firstBtnTopSpaceConstraint;
@@ -96,18 +96,18 @@
     IBOutlet NSLayoutConstraint *statusLabelTopSpaceConstraint;
     IBOutlet NSLayoutConstraint *progressLabel1TopSpaceConstraint;
     IBOutlet NSLayoutConstraint *progressLabel2TopSpaceConstraint;
-    
+
     IBOutlet NSLayoutConstraint *firmwareUpgradeProgressLabel1TrailingSpaceConstraint;
     IBOutlet NSLayoutConstraint *firmwareUpgradeProgressLabel2TrailingSpaceConstraint;
-    
+
     BootLoaderServiceModel *bootloaderModel;
     BOOL isBootloaderCharacteristicFound, isWritingFile1;
-    
+
     NSArray *firmwareFileList, *fileRowDataArray;
     NSMutableArray *currentRowDataArray;
     uint32_t currentRowDataAddress;
     uint32_t currentRowDataCRC32;
-    
+
     NSDictionary *fileHeaderDict;
     NSDictionary *appInfoDict;
     OTAMode firmwareUpgradeMode;
@@ -118,7 +118,7 @@
     ActiveApp activeApp; // Active Application for Dual Application Bootloader projects
     NSData *securityKey; // Security Key for CYACD files
     int _syncRetryNum, _programRetryNum, _flowRetryNum;
-    BOOL _ignoreNotifications, _syncAndEnterBootloaderSent, _reprogramCurrentRow;
+    BOOL _ignoreNotifications, _syncRetrySent, _enterBootloaderSent, _reprogramCurrentRow;
 }
 
 @end
@@ -127,29 +127,29 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     [self initView];
     [self initServiceModel];
-    
+
     activeApp = NoChange; // Do nothing by default
     maxDataSize = WRITE_NO_RESP_MAX_DATA_SIZE;
-    
+
     isWritingFile1 = YES;
-    
+
     // Check for multiple files
     if ([[CyCBManager sharedManager] bootloaderFileArray] != nil) {
         [self.view layoutIfNeeded];
         [self firmwareFilesSelected:[[CyCBManager sharedManager] bootloaderFileArray] upgradeMode:app_stack_separate securityKey:[[CyCBManager sharedManager] bootloaderSecurityKey] activeApp:[[CyCBManager sharedManager] bootloaderActiveApp]];
-        
+
         firmwareUpgradeProgressLabel1TrailingSpaceConstraint.constant = 0.0;
         firmwareUpgradeProgressLabel2TrailingSpaceConstraint.constant = firmwareFile2NameContainerView.frame.size.width;
-        
+
         [firmwareFile1UpgradePercentageLabel setHidden:NO];
         [firmwareFile1UpgradePercentageLabel setText:@"100 %"];
-        
+
         [firmwareFile2UpgradePercentageLabel setHidden:NO];
         [firmwareFile2UpgradePercentageLabel setText:@"0 %"];
-        
+
         UIAlertController *alert = [UIAlertController alertWithTitle:APP_NAME message:LOCALIZEDSTRING(@"OTAUpgradeResumeConfirmMessage") delegate:self cancelButtonTitle:OPT_NO otherButtonTitles:OPT_YES, nil];
         alert.tag = UPGRADE_RESUME_ALERT_TAG;
         [alert presentInParent:nil];
@@ -165,7 +165,7 @@
 {
     [super viewWillAppear:animated];
     [[super navBarTitleLabel] setText:FIRMWARE_UPGRADE];
-    
+
     // Adding custom back button
     UIBarButtonItem * backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:BACK_BUTTON_IMAGE] landscapeImagePhone:[UIImage imageNamed:BACK_BUTTON_IMAGE] style:UIBarButtonItemStyleDone target:self action:@selector(backButtonPressed)];
     self.navigationItem.leftBarButtonItem = backButton;
@@ -190,12 +190,12 @@
 {
     [super viewDidDisappear:animated];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
-    
+
     if (![self.navigationController.viewControllers containsObject:self])
     {
         [bootloaderModel stopUpdate];
     }
-    
+
     // removing the custom back button
     if (self.navigationItem.leftBarButtonItem != nil)
     {
@@ -213,29 +213,30 @@
 {
     applicationAndStackUpgradeCombinedBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
     applicationAndStackUpgradeSeparateBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
-    
+
     //Setting button view properties programmatically.
     applicationUpgradeBtn.layer.shadowColor = [UIColor blackColor].CGColor;
     applicationUpgradeBtn.layer.shadowOpacity = .5;
     applicationUpgradeBtn.layer.shadowRadius = 3;
     applicationUpgradeBtn.layer.shadowOffset = CGSizeZero;
-    [applicationUpgradeBtn setBackgroundColor:[UIColor whiteColor]];
+    [applicationUpgradeBtn setBackgroundColor:COLOR_PRIMARY];
     [applicationUpgradeBtn setSelected:NO];
-    
+
     applicationAndStackUpgradeCombinedBtn.layer.shadowColor = [UIColor blackColor].CGColor;
     applicationAndStackUpgradeCombinedBtn.layer.shadowOpacity = 0.5;
     applicationAndStackUpgradeCombinedBtn.layer.shadowRadius = 3;
     applicationAndStackUpgradeCombinedBtn.layer.shadowOffset = CGSizeZero;
-    [applicationAndStackUpgradeCombinedBtn setBackgroundColor:[UIColor whiteColor]];
+    [applicationAndStackUpgradeCombinedBtn setBackgroundColor:COLOR_PRIMARY];
     [applicationAndStackUpgradeCombinedBtn setSelected:NO];
+
     
     applicationAndStackUpgradeSeparateBtn.layer.shadowColor = [UIColor blackColor].CGColor;
     applicationAndStackUpgradeSeparateBtn.layer.shadowOpacity = 0.5;
     applicationAndStackUpgradeSeparateBtn.layer.shadowRadius = 3;
     applicationAndStackUpgradeSeparateBtn.layer.shadowOffset = CGSizeZero;
-    [applicationAndStackUpgradeSeparateBtn setBackgroundColor:[UIColor whiteColor]];
+    [applicationAndStackUpgradeSeparateBtn setBackgroundColor:COLOR_PRIMARY];
     [applicationAndStackUpgradeSeparateBtn setSelected:NO];
-    
+
     [startStopUpgradeBtn setHidden:YES];
     [startStopUpgradeBtn setSelected:NO];
     [firmwareFile1NameContainerView setHidden:YES];
@@ -245,7 +246,7 @@
     [firmwareFile2UpgradePercentageLabel setHidden:YES];
     firmwareUpgradeProgressLabel1TrailingSpaceConstraint.constant = firmwareFile1NameContainerView.frame.size.width;
     firmwareUpgradeProgressLabel2TrailingSpaceConstraint.constant = firmwareFile2NameContainerView.frame.size.width;
-    
+
     if (self.view.frame.size.height <= 480) {
         titleLabelTopSpaceConstraint.constant = 15;
         firstBtnTopSpaceConstraint.constant = 15;
@@ -299,7 +300,7 @@
                 [firmwareFile2UpgradePercentageLabel setHidden:NO];
                 [firmwareFile2UpgradePercentageLabel setText:@"0 %"];
             }
-            
+
             if (isWritingFile1)
             {
                 [firmwareFile1UpgradePercentageLabel setText:@"0 %"];
@@ -367,18 +368,18 @@
     if (fileList) {
         firmwareFileList = [[NSArray alloc] initWithArray:fileList];
         firmwareUpgradeMode = upgradeMode;
-        
+
         [self initView];
         isWritingFile1 = YES;
         [startStopUpgradeBtn setHidden:NO];
         [currentOperationLabel setHidden:NO];
         [firmwareFile1NameContainerView setHidden:NO];
         firmwareFile1NameLabel.text = [[[fileList objectAtIndex:0] valueForKey:FILE_NAME] stringByDeletingPathExtension];
-        
+
         if (upgradeMode == app_stack_separate) {
             [firmwareFile2NameContainerView setHidden:NO];
             [applicationAndStackUpgradeSeparateBtn setSelected:YES];
-            [applicationAndStackUpgradeSeparateBtn setBackgroundColor:[UIColor colorWithRed:12.0f/255.0f green:55.0f/255.0f blue:123.0f/255.0f alpha:1.0f]];
+            applicationAndStackUpgradeSeparateBtn.backgroundColor = COLOR_ACCENT;
             firmwareFile2NameLabel.text = [[[fileList objectAtIndex:1] valueForKey:FILE_NAME] stringByDeletingPathExtension];
             currentOperationLabel.text = LOCALIZEDSTRING(@"OTAFileSelectedMessage");
         } else {
@@ -386,13 +387,13 @@
             if(upgradeMode == app_upgrade)
             {
                 [applicationUpgradeBtn setSelected:YES];
-                [applicationUpgradeBtn setBackgroundColor:[UIColor colorWithRed:12.0f/255.0f green:55.0f/255.0f blue:123.0f/255.0f alpha:1.0f]];
+                applicationUpgradeBtn.backgroundColor = COLOR_ACCENT;
             }else{
                 [applicationAndStackUpgradeCombinedBtn setSelected:YES];
-                [applicationAndStackUpgradeCombinedBtn setBackgroundColor:[UIColor colorWithRed:12.0f/255.0f green:55.0f/255.0f blue:123.0f/255.0f alpha:1.0f]];
+                applicationAndStackUpgradeCombinedBtn.backgroundColor = COLOR_ACCENT;
             }
         }
-        
+
         if ([[CyCBManager sharedManager] bootloaderFileArray] == nil) {
             [self startStopBtnTouched:startStopUpgradeBtn];
         }
@@ -403,7 +404,7 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     UIButton * senderBtn = (UIButton *)sender;
-    
+
     FirmwareFileSelectionViewController * destView = [segue destinationViewController];
     destView.delegate = self;
     if (senderBtn.tag == APP_UPGRADE_BTN_TAG) {
@@ -454,18 +455,18 @@
     if (isBootloaderCharacteristicFound) {
         currentIndex = 0;
         [self registerForBootloaderCharacteristicNotifications];
-        
+
         bootloaderModel.fileVersion = [[fileHeaderDict objectForKey:FILE_VERSION] integerValue];
         bootloaderModel.isDualAppBootloaderAppValid = NO;
         bootloaderModel.isDualAppBootloaderAppActive = NO;
-        
+
         // Set checksum type
         if (CHECKSUM_TYPE_CRC == [[fileHeaderDict objectForKey:CHECKSUM_TYPE] integerValue]) {
             [bootloaderModel setCheckSumType:CRC_16];
         } else{
             [bootloaderModel setCheckSumType:CHECK_SUM];
         }
-        
+
         // Write ENTER_BOOTLOADER command
         NSMutableDictionary *dataDict = [NSMutableDictionary new];
         unsigned short dataLength = 0;
@@ -488,18 +489,18 @@
     if (isBootloaderCharacteristicFound) {
         currentIndex = 0;
         [self registerForBootloaderCharacteristicNotifications_v1];
-        
+
         bootloaderModel.fileVersion = [[fileHeaderDict objectForKey:FILE_VERSION] integerValue];
-        
+
         // Set checksum type
         if ([[fileHeaderDict objectForKey:CHECKSUM_TYPE] integerValue]) {
             [bootloaderModel setCheckSumType:CRC_16];
         } else {
             [bootloaderModel setCheckSumType:CHECK_SUM];
         }
-        
+
         _programRetryNum = _flowRetryNum = _syncRetryNum = 0;
-        _ignoreNotifications = _syncAndEnterBootloaderSent = _reprogramCurrentRow = NO;
+        _ignoreNotifications = _syncRetrySent = _enterBootloaderSent = _reprogramCurrentRow = NO;
         [self sendEnterBootloaderCmd];
     }
 }
@@ -614,7 +615,7 @@
                 }
             } else if (currentIndex == fileRowDataArray.count){
                 // The 2nd time the GetAppStatus is called
-                if (bootloaderModel.isDualAppBootloaderAppValid) { // It looks strange but it is so. The same logic is used by CySmart PC Tool.
+                if (bootloaderModel.isDualAppBootloaderAppValid) { // It looks strange but it is so. The same logic is used by AIROC PC Tool.
                     [[UIAlertController alertWithTitle:APP_NAME message:LOCALIZEDSTRING(@"OTAInvalidActiveAppProgrammedError")] presentInParent:nil];
                     [self initView];
                 } else {
@@ -640,19 +641,19 @@
         } else if ([command isEqual:@(VERIFY_ROW)]) {
             // Compare checksum received from the device and the one from the file row
             NSDictionary *rowDataDict = [fileRowDataArray objectAtIndex:currentIndex];
-            
+
             uint8_t rowChecksum = [Utilities getIntegerFromHexString:[rowDataDict objectForKey:CHECKSUM_OTA]];
             uint8_t arrayID = [Utilities getIntegerFromHexString:[rowDataDict objectForKey:ARRAY_ID]];
             uint16_t rowNumber = [Utilities getIntegerFromHexString:[rowDataDict objectForKey:ROW_NUMBER]];
             uint16_t dataLength = [Utilities getIntegerFromHexString:[rowDataDict objectForKey:DATA_LENGTH]];
-            
+
             uint8_t sum = rowChecksum + arrayID + rowNumber + (rowNumber >> 8) + dataLength + (dataLength >> 8);
             if (sum == bootloaderModel.checksum) {
                 currentIndex++;
-                
+
                 // Update UI with file writing progress
                 float percentage = ((float) currentIndex/fileRowDataArray.count) * 100;
-                
+
                 fileWritingProgress = (firmwareFile1NameContainerView.frame.size.width * currentIndex)/fileRowDataArray.count;
                 if (isWritingFile1) {
                     firmwareUpgradeProgressLabel1TrailingSpaceConstraint.constant = firmwareFile1NameContainerView.frame.size.width - fileWritingProgress;
@@ -661,11 +662,11 @@
                     firmwareUpgradeProgressLabel2TrailingSpaceConstraint.constant = firmwareFile2NameContainerView.frame.size.width - fileWritingProgress;
                     firmwareFile2UpgradePercentageLabel.text = [NSString stringWithFormat:@"%d %%",(int)percentage];
                 }
-                
+
                 [UIView animateWithDuration:0.5 animations:^{
                     [self.view layoutIfNeeded];
                 }];
-                
+
                 // Writing next line from file
                 if (currentIndex < fileRowDataArray.count) {
                     [self startProgrammingDataRowAtIndex:currentIndex];
@@ -684,17 +685,16 @@
         } else if ([command isEqual:@(VERIFY_CHECKSUM)]) {
             if (bootloaderModel.isAppValid) {
                 [currentOperationLabel setText:LOCALIZEDSTRING(@"OTAUpgradeCompletedMessage")];
-                
+
                 if (app_stack_separate == firmwareUpgradeMode && isWritingFile1) {
                     [[CyCBManager sharedManager] setBootloaderFileArray:firmwareFileList];
                     [[CyCBManager sharedManager] setBootloaderSecurityKey:securityKey];
                     [[CyCBManager sharedManager] setBootloaderActiveApp:activeApp];
                     [[UNUserNotificationCenter currentNotificationCenter] notifyWithContentBody:LOCALIZEDSTRING(@"OTAAppUgradePendingMessage")];
-                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:LOCALIZEDSTRING(@"OTAUpgradeStatus")];
                 } else {
                     [[UNUserNotificationCenter currentNotificationCenter] notifyWithContentBody:LOCALIZEDSTRING(@"OTAUpgradeCompletedMessage")];
                 }
-                
+
                 [self sendExitBootloaderCmd];
             } else {
                 [[UIAlertController alertWithTitle:APP_NAME message:LOCALIZEDSTRING(@"OTAInvalidApplicationMessage")] presentInParent:nil];
@@ -718,20 +718,22 @@
  *
  */
 -(void) handleResponseForCommand_v1:(id)command error:(unsigned char)error {
-    
+
     DebugLog(@"%@", [NSString stringWithFormat:@"Command 0x%02x completed with code 0x%02x %@ %@", [command unsignedIntValue], error, (error ? @"ERR" : @""), (_ignoreNotifications ? @"- IGNORED" : @"")]);
-    
+
     if (_ignoreNotifications)
     {
         return;
     }
-    
-    const BOOL isResponseToSyncAndEnterBootloader = _syncAndEnterBootloaderSent;
-    _syncAndEnterBootloaderSent = NO;
-    
+
+    const BOOL isResponseToSync = _syncRetrySent;
+    const BOOL isResponseToEnterBootloader = _enterBootloaderSent;
+    _syncRetrySent = NO;
+    _enterBootloaderSent = NO;
+
     if (SUCCESS != error && FLOW_RETRY_LIMIT > _flowRetryNum)
     {
-        if (isResponseToSyncAndEnterBootloader)
+        if (isResponseToSync)
         {
             if (SYNC_RETRY_LIMIT > _syncRetryNum)
             {
@@ -759,19 +761,24 @@
             ++_flowRetryNum;
             DebugLog(@"Flow retry# %d", _flowRetryNum);
         }
-        
+
         // Send SYNC(unacknowledgeable) ...
         NSData *syncCmdData = [bootloaderModel createPacketWithCommandCode_v1:SYNC dataLength:0 data:nil];
         [bootloaderModel writeCharacteristicValueWithData:syncCmdData command:0]; //NOTE: passing 0 for command arg to prevent putting the command into the commandArray array
+        _enterBootloaderSent = YES;
+        _syncRetrySent = YES;
         
-        // ... followed by ENTER_BOOTLOADER
+        return;
+    } else if (SUCCESS == error && isResponseToEnterBootloader){
+        // ... followed by ENTER_BOOTLOADER after the sync response
         NSDictionary *enterBootloaderDataDict = [NSDictionary dictionaryWithObject:[fileHeaderDict objectForKey:PRODUCT_ID] forKey:PRODUCT_ID];
         NSData *enterBootloaderData = [bootloaderModel createPacketWithCommandCode_v1:ENTER_BOOTLOADER dataLength:4 data:enterBootloaderDataDict];
         [bootloaderModel writeCharacteristicValueWithData:enterBootloaderData command:POST_SYNC_ENTER_BOOTLOADER];
-        _syncAndEnterBootloaderSent = YES;
+        _syncRetrySent = YES;
+        
         return;
     }
-    
+
     if (SUCCESS != error)
     {
         [[UIAlertController alertWithTitle:APP_NAME message:[bootloaderModel errorMessageForErrorCode:error]] presentInParent:nil];
@@ -779,9 +786,9 @@
         _ignoreNotifications = YES;
         return;
     }
-    
+
     _syncRetryNum = 0;
-    
+
     if ([command isEqual:@(POST_SYNC_ENTER_BOOTLOADER)])
     {
         if (_reprogramCurrentRow)
@@ -797,17 +804,17 @@
         }
         return;
     }
-    
+
     if (SUCCESS == error) {
         if ([command isEqual:@(ENTER_BOOTLOADER)]) {
             // Compare Silicon ID and Silicon Rev string
             if ([[[fileHeaderDict objectForKey:SILICON_ID] lowercaseString] isEqualToString:bootloaderModel.siliconIDString] && [[fileHeaderDict objectForKey:SILICON_REV] isEqualToString:bootloaderModel.siliconRevString]) {
                 /* Send SET_APP_METADATA command */
                 uint8_t appID = [[fileHeaderDict objectForKey:APP_ID] unsignedCharValue];
-                
+
                 uint32_t appStart = 0xFFFFFFFF;
                 uint32_t appSize = 0;
-                
+
                 if (appInfoDict) {
                     appStart = [appInfoDict[APPINFO_APP_START] unsignedIntValue];
                     appSize = [appInfoDict[APPINFO_APP_SIZE] unsignedIntValue];
@@ -822,7 +829,7 @@
                         }
                     }
                 }
-                
+
                 NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithUnsignedChar:appID], APP_ID, [NSNumber numberWithUnsignedInt:appStart], APP_META_APP_START, [NSNumber numberWithUnsignedInt:appSize], APP_META_APP_SIZE, nil];
                 NSData *data = [bootloaderModel createPacketWithCommandCode_v1:SET_APP_METADATA dataLength:9 data:dataDict];
                 [bootloaderModel writeCharacteristicValueWithData:data command:SET_APP_METADATA];
@@ -873,7 +880,7 @@
             if (bootloaderModel.isProgramRowDataSuccess) {
                 currentIndex++;
                 _programRetryNum = 0;
-                
+
                 float percentage = ((float) currentIndex/fileRowDataArray.count) * 100;
                 fileWritingProgress = (firmwareFile1NameContainerView.frame.size.width * currentIndex)/fileRowDataArray.count;
                 if (isWritingFile1) {
@@ -883,11 +890,11 @@
                     firmwareUpgradeProgressLabel2TrailingSpaceConstraint.constant = firmwareFile2NameContainerView.frame.size.width - fileWritingProgress;
                     firmwareFile2UpgradePercentageLabel.text = [NSString stringWithFormat:@"%d %%",(int)percentage];
                 }
-                
+
                 [UIView animateWithDuration:0.5 animations:^{
                     [self.view layoutIfNeeded];
                 }];
-                
+
                 if (currentIndex < fileRowDataArray.count) {
                     NSDictionary * rowDataDict = [fileRowDataArray objectAtIndex:currentIndex];
                     if (RowTypeEiv == [[rowDataDict objectForKey:ROW_TYPE] unsignedCharValue]) {
@@ -923,17 +930,16 @@
         } else if ([command isEqual:@(VERIFY_APP)]) {
             if (bootloaderModel.isAppValid) {
                 [currentOperationLabel setText:LOCALIZEDSTRING(@"OTAUpgradeCompletedMessage")];
-                
+
                 // Storing selected files
                 if (app_stack_separate == firmwareUpgradeMode && isWritingFile1) {
                     // NOTE: Security Key and Active Application are not applicable for CYACD2, hence not setting them here
                     [[CyCBManager sharedManager] setBootloaderFileArray:firmwareFileList];
                     [[UNUserNotificationCenter currentNotificationCenter] notifyWithContentBody:LOCALIZEDSTRING(@"OTAAppUgradePendingMessage")];
-                    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:LOCALIZEDSTRING(@"OTAUpgradeStatus")];
                 } else {
                     [[UNUserNotificationCenter currentNotificationCenter] notifyWithContentBody:LOCALIZEDSTRING(@"OTAUpgradeCompletedMessage")];
                 }
-                
+
                 /* Send EXIT_BOOTLOADER command */
                 NSData *exitBootloaderCommandData = [bootloaderModel createPacketWithCommandCode_v1:EXIT_BOOTLOADER dataLength:0 data:nil];
                 [bootloaderModel writeCharacteristicValueWithData:exitBootloaderCommandData command:EXIT_BOOTLOADER];
@@ -964,7 +970,7 @@
 -(void) startProgrammingDataRowAtIndex:(int) index
 {
     NSDictionary *rowDataDict = [fileRowDataArray objectAtIndex:index];
-    
+
     // Check for change in arrayID
     if (![[rowDataDict objectForKey:ARRAY_ID] isEqual:currentArrayID])
     {
@@ -973,14 +979,14 @@
         NSDictionary * dict = [NSDictionary dictionaryWithObject:[rowDataDictionary objectForKey:ARRAY_ID] forKey:FLASH_ARRAY_ID];
         NSData * data = [bootloaderModel createPacketWithCommandCode:GET_FLASH_SIZE dataLength:1 data:dict];
         [bootloaderModel writeCharacteristicValueWithData:data command:GET_FLASH_SIZE];
-        
+
         currentArrayID = [rowDataDictionary objectForKey:ARRAY_ID];
         return;
     }
-    
+
     // Check whether the row number falls in the range obtained from the device
     currentRowNumber = [Utilities getIntegerFromHexString:[rowDataDict objectForKey:ROW_NUMBER]];
-    
+
     if (currentRowNumber >= bootloaderModel.startRowNumber && currentRowNumber <= bootloaderModel.endRowNumber)
     {
         /* Write data using PROGRAM_ROW command */
@@ -1004,12 +1010,12 @@
 -(void) startProgrammingDataRowAtIndex_v1:(int) index
 {
     NSDictionary *rowDataDict = [fileRowDataArray objectAtIndex:index];
-    
+
     //Write data using SEND_DATA/PROGRAM_DATA commands
     currentRowDataArray = [[rowDataDict objectForKey:DATA_ARRAY] mutableCopy];
     currentRowDataAddress = [[rowDataDict objectForKey:ADDRESS] unsignedIntValue];
     currentRowDataCRC32 = [[rowDataDict objectForKey:CRC_32] unsignedIntValue];
-    
+
     [self programDataRowAtIndex_v1:index];
 }
 
@@ -1022,7 +1028,7 @@
 -(void) programDataRowAtIndex:(int)index
 {
     NSDictionary *rowDataDict = [fileRowDataArray objectAtIndex:index];
-    
+
     if (currentRowDataArray.count > maxDataSize)
     {
         NSDictionary *dataDict = [NSDictionary dictionaryWithObjectsAndKeys:[currentRowDataArray subarrayWithRange:NSMakeRange(0, maxDataSize)], ROW_DATA, nil];

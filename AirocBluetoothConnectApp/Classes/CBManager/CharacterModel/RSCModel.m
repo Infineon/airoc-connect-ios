@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -187,17 +187,17 @@
     //Unit is in m/s with a resolution of 1/256 s
     //Convert to km/hr  ( m/s *3.6)
     self.InstantaneousSpeed = 3.6*(_instantaneousSpeed/256.0);
-    
+
     shiftVal+=2;
-    
+
     //    Instantaneous Cadence ---- Unit is in 1/minute (or RPM) with a resolutions of 1 1/min (or 1 RPM)
-    
+
     uint8_t _instantaneousCadence = reportData[shiftVal++];
     self.InstantaneousCadence = (float)_instantaneousCadence;
-    
+
     uint16_t _instantaneousStrideLength = 0;
     uint32_t _totalDistancePresent = 0;
-    
+
     self.InstantaneousStrideLength = 0.0f;
 
     if ((reportData[0] & 0x01) == 1)
@@ -206,7 +206,7 @@
         // Instantaneous Stride Length ---- Unit is in meter with a resolution of 1/100 m (or centimeter).
          _instantaneousStrideLength = CFSwapInt16LittleToHost(*(uint16_t *)(&reportData[shiftVal]));
         self.InstantaneousStrideLength = ((float)_instantaneousStrideLength)/100.0f;
-        
+
         shiftVal += 2 ;
     }
 
@@ -215,21 +215,21 @@
         //Total Distance Present
         // Unit is in meter with a resolution of 1/10 m (or decimeter)
         _totalDistancePresent =(uint32_t)CFSwapInt32LittleToHost(*(uint32_t*)&reportData[shiftVal]);
-        
+
         if (_totalDistancePresent)
         {
             self.TotalDistance = _totalDistancePresent/10.0;
 
         }
     }
-    
+
     if ((reportData[0] & 0x04) == 0)
     {
         self.IsWalking = YES ;
     }
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:RSC_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:RSC_CHARACTERISTIC_UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
-    
+
 }
 
 

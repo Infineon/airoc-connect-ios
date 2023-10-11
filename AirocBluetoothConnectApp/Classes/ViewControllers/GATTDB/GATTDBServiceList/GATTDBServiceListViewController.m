@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -81,7 +81,7 @@
 -(void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self])
     {
         [self handleCharacteristicNotifications];
@@ -99,19 +99,19 @@
 {
     servicesArray = [[[CyCBManager sharedManager] foundServices] copy]; // Getting the available services
     return servicesArray.count;
-    
+
 }
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     ServiceListTableViewCell *currentCell=[tableView dequeueReusableCellWithIdentifier:SERVICE_CELL_IDENTIFIER];
-    
+
     if (currentCell == nil)
     {
         currentCell = [[ServiceListTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:SERVICE_CELL_IDENTIFIER];
     }
 
     CBService *service = [servicesArray objectAtIndex:[indexPath row]];
-    
+
     /*  Display the service name  */
      NSString *serviceNameString = [ResourceHandler getServiceNameForUUID:service.UUID];
     [currentCell setServiceName:serviceNameString];
@@ -132,10 +132,9 @@
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
 {
     /* Setting cell background */
-    UIImageView *cellBGImageView=[[UIImageView alloc]initWithFrame:cell.bounds];
-    [cellBGImageView setImage:[UIImage imageNamed:CELL_BG_IMAGE_SMALL]];
-    cell.backgroundView=cellBGImageView;
-    
+    [cell viewWithTag:42].layer.borderColor = COLOR_PRIMARY.CGColor;
+    [cell viewWithTag:42].layer.borderWidth = 1;
+
 }
 
 #pragma mark - TableView Delegate Methods
@@ -165,16 +164,16 @@
 {
     NSString *message = @"";
     BOOL indicationsDisabled = NO, notificationsDisabled = NO;
-    
+
     for (CBService *service in [[CyCBManager sharedManager] foundServices])
     {
         for (CBCharacteristic *characteristic in service.characteristics) {
-            
+
             if (characteristic.isNotifying){
-                
+
                 if ((characteristic.properties & CBCharacteristicPropertyNotify) != 0) {
                     message = NOTIFY_DISABLED;
-                    
+
                     notificationsDisabled = YES;
                     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:STOP_NOTIFY];
                 }
@@ -182,23 +181,23 @@
                 {
                     message = INDICATE_DISABLED;
                     indicationsDisabled = YES;
-                    
+
                     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:STOP_INDICATE];
                 }
-                
+
                 [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:NO forCharacteristic:characteristic];
             }
         }
     }
-    
+
     if (indicationsDisabled && notificationsDisabled)
     {
         message = INDICATE_AND_NOTIFY_DISABLED;
     }
-    
+
     // Showing the toast message
     if (![message isEqual:@""])
-    {        
+    {
         if ([[self.navigationController.viewControllers lastObject] isKindOfClass:[CarouselViewController class]])
         {
             CarouselViewController *carouselVC = [self.navigationController.viewControllers lastObject];

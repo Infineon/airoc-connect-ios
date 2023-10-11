@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -44,7 +44,7 @@
 @interface TemperatureModel ()
 {
     CBCharacteristic *sensorTypeCharacteristic, *sensorScanintervalCharacteristic, *temperatureReadCharacteristic;
-    
+
 }
 @end
 
@@ -63,7 +63,7 @@
     if (temperatureReadCharacteristic != nil)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:ANALOG_TEMPERATURE_SERVICE_UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:temperatureReadCharacteristic.UUID] descriptor:nil operation:STOP_NOTIFY];
-        
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:NO forCharacteristic:temperatureReadCharacteristic];
     }
 }
@@ -80,7 +80,7 @@
     uint8_t val = newScanInterval; // The value which you want to write.
     NSData  *valData = [NSData dataWithBytes:(void*)&val length:sizeof(val)];
     [[[CyCBManager sharedManager] myPeripheral] writeValue:valData forCharacteristic:sensorScanintervalCharacteristic type:CBCharacteristicWriteWithoutResponse];
-    
+
     [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:sensorScanintervalCharacteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:sensorScanintervalCharacteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",WRITE_REQUEST,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:valData]]];
 }
 
@@ -122,18 +122,18 @@
 {
     NSData *dataValue = characteristic.value;
     const uint8_t *reportData = (uint8_t *)[dataValue bytes];
-    
+
     if ([characteristic.UUID isEqual:TEMPERATURE_ANALOG_SENSOR_CHARACTERISTIC_UUID])
     {
         _sensorTypeString = [NSString stringWithFormat:@"%d",reportData[0]];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:dataValue]]];
 
     }
     else if ([characteristic.UUID isEqual:TEMPERATURE_SENSOR_SCAN_INTERVAL_CHARACTERISTIC_UUID])
     {
         _sensorScanIntervalString = [NSString stringWithFormat:@"%d",reportData[0]];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:dataValue]]];
 
     }
@@ -141,7 +141,7 @@
     {
         double tempValue = CFSwapInt32LittleToHost(*(uint32_t *) &reportData[0]);
         _temperatureValueString = [NSString stringWithFormat:@"%f",tempValue];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:characteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:characteristic.UUID] descriptor:nil operation:[NSString stringWithFormat:@"%@%@ %@",NOTIFY_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:dataValue]]];
 
     }
@@ -158,7 +158,7 @@
     if (temperatureReadCharacteristic != nil)
     {
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:temperatureReadCharacteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:temperatureReadCharacteristic.UUID] descriptor:nil operation:START_NOTIFY];
-        
+
         [[[CyCBManager sharedManager] myPeripheral] setNotifyValue:YES forCharacteristic:temperatureReadCharacteristic];
     }
 }
@@ -174,17 +174,17 @@
     if (sensorScanintervalCharacteristic != nil)
     {
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:sensorScanintervalCharacteristic];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:sensorScanintervalCharacteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:sensorScanintervalCharacteristic.UUID] descriptor:nil operation:READ_REQUEST];
     }
-    
+
     if (sensorTypeCharacteristic != nil)
     {
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:sensorTypeCharacteristic];
-        
+
         [Utilities logDataWithService:[ResourceHandler getServiceNameForUUID:sensorTypeCharacteristic.service.UUID] characteristic:[ResourceHandler getCharacteristicNameForUUID:sensorTypeCharacteristic.UUID] descriptor:nil operation:READ_REQUEST];
     }
-    
+
 }
 
 

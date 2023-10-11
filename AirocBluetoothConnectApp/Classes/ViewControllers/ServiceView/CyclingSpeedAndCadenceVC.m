@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -44,7 +44,7 @@
 /*!
  *  @class CyclingSpeedAndCadenceVC
  *
- *  @discussion Class to handle the user interactions and UI updates for cycling speeed and cadence service 
+ *  @discussion Class to handle the user interactions and UI updates for cycling speeed and cadence service
  *
  */
 @interface CyclingSpeedAndCadenceVC ()<UITextFieldDelegate, lineChartDelegate>
@@ -53,14 +53,14 @@
     NSTimer *timeValueUpdationTimer;
     NSDate *startTime ;
     int timerValue;
-    
+
     BOOL isCharDiscovered;    // Varieble to determine whether the required characteristic is found
-    
+
     KLCPopup* kPopup;
     MyLineChart *myChart;
     NSMutableArray *rpmDataArray;
     NSMutableArray *timeDataArray;
-    
+
     NSTimeInterval previousTimeInterval;
     float xAxisTimeInterval;
 }
@@ -88,15 +88,15 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    
+
     rpmDataArray = [NSMutableArray array];
     timeDataArray = [NSMutableArray array];
     [self initializeView];
-    
+
     // Initialize CSC model
     [self initCSCModel];
     [self addDoneButton];
-    
+
     previousTimeInterval = 0;
     xAxisTimeInterval = 1.0;
     timerValue = 0;
@@ -116,7 +116,7 @@
 -(void) viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    
+
     if (![self.navigationController.viewControllers containsObject:self])
     {
         [mCSCModel stopUpdate];    // stop receiving characteristic value when the user exits the screen
@@ -125,7 +125,7 @@
 }
 /*
  #pragma mark - Navigation
- 
+
  // In a storyboard-based application, you will often want to do a little preparation before navigation
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
  // Get the new view controller using [segue destinationViewController].
@@ -143,9 +143,9 @@
 {
     if (IS_IPAD)
     {
-        _contentViewHeightConstraint.constant = self.view.frame.size.height - (NAV_BAR_HEIGHT + STATUS_BAR_HEIGHT)
-        ;
-        [self.view layoutIfNeeded];
+//        _contentViewHeightConstraint.constant = self.view.frame.size.height - (NAV_BAR_HEIGHT + STATUS_BAR_HEIGHT)
+//        ;
+//        [self.view layoutIfNeeded];
     }
     _coveredDistanceLabel.text = @"";
     _coveredDistanceUnitLabel.text = @"";
@@ -164,7 +164,7 @@
     if (!mCSCModel) {
         mCSCModel = [[CSCModel alloc] init];
     }
-    
+
     __weak __typeof(self) wself = self;
     [mCSCModel startDiscoverChar:^(BOOL success, NSError *error) {
         __strong __typeof(self) sself = wself;
@@ -207,7 +207,7 @@
 -(void) updateUI
 {
     @synchronized(mCSCModel){
-        
+
         // Calculate and display distance, RPM and calories burnt
         [self findDistance];
         [self updateRPM];
@@ -225,9 +225,9 @@
     if (!sender.selected)
     {
         NSString *toastMessage = @"";
-        
+
         // Checking weight textfield
-        
+
         if([_userWeightTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length == 0){
             toastMessage = LOCALIZEDSTRING(@"emptyWeightFieldWarning");
         }else if ([_userWeightTextField.text floatValue] < 1){
@@ -235,14 +235,14 @@
         }else if([_userWeightTextField.text floatValue] > 200){
             toastMessage = LOCALIZEDSTRING(@"maxWeightWarning");
         }
-        
-        
+
+
         if (![toastMessage isEqualToString:@""]) {
             toastMessage = [toastMessage stringByAppendingString:@"\n"];
         }
-        
+
         // Checking wheel radius textfield
-        
+
         if ([_wheelRadiusTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length == 0) {
             toastMessage = [toastMessage stringByAppendingString:LOCALIZEDSTRING(@"emptyRadiusFieldWarning")];
         }else if ([_wheelRadiusTextField.text integerValue] < 300){
@@ -250,41 +250,41 @@
         }else if ([_wheelRadiusTextField.text integerValue] > 725){
             toastMessage = [toastMessage stringByAppendingString:LOCALIZEDSTRING(@"maxRadiusWarning")];
         }
-        
+
         if (![toastMessage isEqualToString:@""]) {
             [self.view makeToast:toastMessage];
         }
-        
+
         [_burnedCaloriesUnitLabel setHidden:NO];
         [_wheelRPMUnitLabel setHidden:NO];
-        
+
         if(isCharDiscovered)
         {
             int wheelRadius = [_wheelRadiusTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]].length>0?[_wheelRadiusTextField.text intValue]:0;
             mCSCModel.wheelRadius = wheelRadius;
-            
+
             [self startUpdateCharacteristic];
-            
+
             // Remove keyboard
             if ([_userWeightTextField isFirstResponder]) {
                 [_userWeightTextField resignFirstResponder];
             }
-            
+
             if ([_wheelRadiusTextField isFirstResponder]) {
                 [_wheelRadiusTextField resignFirstResponder];
             }
-            
+
             // Reset time
             startTime = [NSDate date];
             timerValue = 0;
-            
+
             // Reset graph
             [timeDataArray removeAllObjects];
-            
+
             timeValueUpdationTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateTimeLabel) userInfo:nil repeats:YES];
             sender.selected = YES;
         }
-        
+
     }
     else
     {
@@ -307,7 +307,7 @@
 {
     timerValue++;
     _timeLabel.text =  [Utilities timeInFormat:timerValue];
-    
+
     // Calculate and update Calories burnt
     float userWeight = [[_userWeightTextField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] length] > 0 ? [_userWeightTextField.text floatValue] : 0.0f;
     float burntCaloriesAmount = 0;
@@ -358,21 +358,21 @@
         else
         {
             [rpmDataArray addObject:@(mCSCModel.cadence)];
-            
+
             NSTimeInterval timeInterval = fabs([startTime timeIntervalSinceNow]);
-            
+
             if (previousTimeInterval == 0)
             {
                 previousTimeInterval = timeInterval;
             }
-            
+
             if (timeInterval > previousTimeInterval)
             {
                 xAxisTimeInterval = timeInterval - previousTimeInterval;
             }
-            
+
             [timeDataArray addObject:@(timeInterval)];
-            
+
             if(myChart && kPopup.isShowing)
             {
                 [self checkGraphPointsCount];
@@ -404,22 +404,22 @@
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
     if (textField.tag == WEIGHT_TEXTFIELD_TAG) {
-        
+
         if ([string isEqualToString:@""]) {
             return YES;
         }else if ([string rangeOfCharacterFromSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]].location != NSNotFound){
-            
+
             if ([string isEqualToString:@"." ] && [textField.text rangeOfString:@"."].length == 0 && textField.text.length <= 3) {
                 return YES;
             }
             return NO;
-            
+
         }else{
-            
+
             if ([textField.text rangeOfString:@"."].length > 0 && ![textField.text hasSuffix:@"."]) {
                 return NO;
             }
-            
+
             if ([textField.text rangeOfString:@"."].length == 0 && textField.text.length == 3) {
                 return NO;
             }
@@ -435,7 +435,7 @@
             return NO;
         }
     }
-    
+
     return YES;
 }
 
@@ -456,26 +456,26 @@
     myChart.graphTitleLabel.text = CYCLING_GRAPH_HEADER;
     [myChart addXLabel:TIME yLabel:CYCLING_GRAPH_YLABEL];
     myChart.delegate = self;
-    
+
     if([timeDataArray count])
     {
         [self checkGraphPointsCount];
         [myChart updateLineGraph:timeDataArray Y:rpmDataArray];
-        
+
         KLCPopupLayout layout = KLCPopupLayoutMake(KLCPopupHorizontalLayoutCenter,
-                                                   KLCPopupVerticalLayoutBottom);
-        
+                                                   KLCPopupVerticalLayoutCenter);
+
         kPopup = [KLCPopup popupWithContentView:myChart
                                        showType:KLCPopupShowTypeBounceIn
                                     dismissType:KLCPopupDismissTypeBounceOut
-                                       maskType:KLCPopupMaskTypeClear
+                                       maskType:KLCPopupMaskTypeDimmed
                        dismissOnBackgroundTouch:YES
                           dismissOnContentTouch:NO];
         [kPopup showWithLayout:layout];
     }
     else
         [[UIAlertController alertWithTitle:APP_NAME message:LOCALIZEDSTRING(@"graphDataNotAvailableAlert")] presentInParent:nil];
-    
+
 }
 
 /*!
@@ -485,14 +485,14 @@
  *
  */
 -(void) checkGraphPointsCount{
-    
+
     if (timeDataArray.count > MAX_GRAPH_POINTS) {
         timeDataArray = [[timeDataArray subarrayWithRange:NSMakeRange(timeDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
         myChart.chartView.setXmin = YES;
     }else{
         myChart.chartView.setXmin = NO;
     }
-    
+
     if (rpmDataArray.count > MAX_GRAPH_POINTS) {
         rpmDataArray = [[rpmDataArray subarrayWithRange:NSMakeRange(rpmDataArray.count - MAX_GRAPH_POINTS,MAX_GRAPH_POINTS)] mutableCopy];
     }
@@ -508,9 +508,9 @@
 {
     UIImage *screenShot = [Utilities captureScreenShot];
     [kPopup dismiss:YES];
-    
+
     CGRect rect = [(UIButton *)sender frame];
-    
+
     CGRect newRect = CGRectMake(rect.origin.x, rect.origin.y + (self.view.frame.size.height/2), rect.size.width, rect.size.height);
     [self showActivityPopover:[self saveImage:screenShot] rect:newRect excludedActivities:nil];
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2014-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -46,7 +46,7 @@
     void(^cbTransmissionPowerCharacteristicHandler)(BOOL success, NSError *error);
     void(^cbLinkLossCharacteristicHandler)(BOOL success, NSError *error);
     void(^cbImmedieteAlertCharacteristicHandler)(BOOL success, NSError *error);
-    
+
     CBCharacteristic *transmissionPowerCharacteristic;
     CBCharacteristic *linkLossCharacteristic;
 }
@@ -65,7 +65,7 @@
 -(void)startDiscoverCharacteristicsForService:(CBService *)service withCompletionHandler:(void (^) (CBService *foundService,BOOL success, NSError *error))handler
 {
     cbCharacteristicDiscoverHandler = handler;
-    
+
     [[CyCBManager sharedManager] setCbCharacteristicDelegate:self];
     [[[CyCBManager sharedManager] myPeripheral] discoverCharacteristics:nil forService:service];;
 }
@@ -92,10 +92,10 @@
 -(void)updateLinkLossCharacteristicValue:(enum alertOptions)option WithHandler:(void (^) (BOOL success, NSError *error))handler
 {
     cbLinkLossCharacteristicHandler = handler;
-    
+
     uint8_t val = option; // The value which you want to write.
     NSData* valData = [NSData dataWithBytes:(void*)&val length:sizeof(val)];
-    
+
     [self logFindMeDataWithService:linkLossCharacteristic.service characteristic:linkLossCharacteristic data:[NSString stringWithFormat:@"%@%@ %@",WRITE_REQUEST,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:valData]]];
     [[[CyCBManager sharedManager] myPeripheral] writeValue:valData forCharacteristic:linkLossCharacteristic type:CBCharacteristicWriteWithResponse];
 }
@@ -112,10 +112,10 @@
 
     uint8_t val = option; // The value which you want to write.
     NSData* valData = [NSData dataWithBytes:(void*)&val length:sizeof(val)];
-    
+
     [[[CyCBManager sharedManager] myPeripheral] writeValue:valData forCharacteristic:_immediateAlertCharacteristic type:CBCharacteristicWriteWithoutResponse];
     [self logFindMeDataWithService:_immediateAlertCharacteristic.service characteristic:_immediateAlertCharacteristic data:[NSString stringWithFormat:@"%@%@ %@",WRITE_REQUEST,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:valData]]];
-    
+
     cbImmedieteAlertCharacteristicHandler(YES,nil);
 }
 
@@ -146,7 +146,7 @@
 {
     if ([service.UUID isEqual:TRANSMISSION_POWER_SERVICE]|[service.UUID isEqual:LINK_LOSS_SERVICE_UUID] | [service.UUID isEqual:IMMEDIATE_ALERT_SERVICE_UUID])
     {
-        
+
         /* Read the Tx Power Level characteristic which represents the current transmit power level of a physical layer from the characteristic .
          */
         if ([service.UUID isEqual:TRANSMISSION_POWER_SERVICE])
@@ -160,11 +160,11 @@
                 }
             }
         }
-        
+
         /*
          Read the Alert Level from characteristic, which is used to expose the current link loss alert level that is used to determine how the device alerts when the link is lost.
          */
-        
+
         if ([service.UUID isEqual:LINK_LOSS_SERVICE_UUID])
         {
             for (CBCharacteristic *aChar in service.characteristics)
@@ -176,10 +176,10 @@
                 }
             }
         }
-        
+
         /* Read the  Alert Level from characteristic, which is a control point that allows a peer to command this device to alert to a given leve
          */
-        
+
         if ([service.UUID isEqual:IMMEDIATE_ALERT_SERVICE_UUID])
         {
             for (CBCharacteristic *aChar in service.characteristics)
@@ -200,7 +200,7 @@
         {
             cbCharacteristicDiscoverHandler(service, NO,error);
         }
-        
+
     }
     else
         cbCharacteristicDiscoverHandler(service,NO,error);
@@ -219,25 +219,25 @@
     {
         NSData *data = [characteristic value];
         SInt8 *dataPointer = (SInt8 *)[data bytes];
-        
+
         _transmissionPowerValue = dataPointer[0];
-        
+
         // Data logging
         [self logFindMeDataWithService:transmissionPowerCharacteristic.service characteristic:transmissionPowerCharacteristic data:[NSString stringWithFormat:@"%@%@ %@",READ_RESPONSE,DATA_SEPERATOR,[Utilities convertDataToLoggerFormat:data]]];
-        
+
         if (cbTransmissionPowerCharacteristicHandler != nil)
         {
             cbTransmissionPowerCharacteristicHandler(YES,nil);
         }
-        
+
         [self logFindMeDataWithService:transmissionPowerCharacteristic.service characteristic:transmissionPowerCharacteristic data:READ_REQUEST];
-        
+
         [[[CyCBManager sharedManager] myPeripheral] readValueForCharacteristic:transmissionPowerCharacteristic];
 
     }
     else if ([characteristic.UUID isEqual:_immediateAlertCharacteristic.UUID])
     {
-        
+
     }
     else
     {
@@ -263,13 +263,13 @@
         {
             [self logFindMeDataWithService:linkLossCharacteristic.service characteristic:linkLossCharacteristic data:[NSString stringWithFormat:@"%@- %@",WRITE_REQUEST_STATUS,WRITE_SUCCESS]];
             cbLinkLossCharacteristicHandler(YES,nil);
-            
+
         }
         else
         {
             [self logFindMeDataWithService:linkLossCharacteristic.service characteristic:linkLossCharacteristic data:[NSString stringWithFormat:@"%@- %@%@",WRITE_REQUEST_STATUS,WRITE_ERROR,[error.userInfo objectForKey:NSLocalizedDescriptionKey]]];
             cbLinkLossCharacteristicHandler(NO,error);
-            
+
         }
     }
 }
